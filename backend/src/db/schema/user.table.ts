@@ -5,13 +5,15 @@ export const userTable = p.pgTable(
   "users",
   {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
-    fname: p.varchar({ length: 255 }).notNull(),
-    lname: p.varchar({ length: 255 }).notNull(),
+    first_name: p.varchar({ length: 255 }).notNull(),
+    last_name: p.varchar({ length: 255 }).notNull(),
     email: p.varchar({ length: 255 }).notNull().unique(),
     password: p.text().notNull(),
+    username: p.varchar({ length: 20 }).unique(),
     otp: p.varchar({ length: 6 }),
-    otp_expiry: p.timestamp(),
+    otp_expiry: p.timestamp({ withTimezone: true }),
     is_verified: p.boolean().default(false),
+    is_active: p.boolean().default(false),
     ...timestamps,
 }, (t) => ({
     userEmailIdx: p.index("user_email_idx").on(t.email),

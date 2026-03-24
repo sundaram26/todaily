@@ -1,7 +1,7 @@
 import * as p from "drizzle-orm/pg-core";
-import { customFieldTable, projectTable } from "./project.schema";
+import { customFieldTable, projectTable } from "./project.table";
 import { timestamps } from "./columns.helpers";
-import { userTable } from "./user.schema";
+import { userTable } from "./user.table";
 
 export const taskTable = p.pgTable(
   "tasks",
@@ -16,10 +16,12 @@ export const taskTable = p.pgTable(
     title: p.varchar({ length: 255 }).notNull(),
     description: p.text(),
     position: p.integer().notNull(),
-    created_by: p.integer()
+    created_by: p
+      .integer()
       .notNull()
       .references(() => userTable.id, { onDelete: "set null" }),
-    updated_by: p.integer()
+    updated_by: p
+      .integer()
       .notNull()
       .references(() => userTable.id, { onDelete: "set null" }),
     start_date: p.timestamp(),
@@ -34,19 +36,25 @@ export const taskTable = p.pgTable(
   }),
 );
 
-export const taskAttachmentTable = p.pgTable("task_attachments", {
+export const taskAttachmentTable = p.pgTable(
+  "task_attachments",
+  {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
-    task_id: p.integer()
-        .notNull()
-        .references(() => taskTable.id, { onDelete: "cascade" }),
+    task_id: p
+      .integer()
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
     file_url: p.text().notNull(),
-    uploaded_by: p.integer()
-        .notNull()
-        .references(() => userTable.id, { onDelete: "set null" }),
-    ...timestamps
-}, (t) => ({
-    attachmentIdx: p.index("attachment_idx").on(t.task_id)
-}))
+    uploaded_by: p
+      .integer()
+      .notNull()
+      .references(() => userTable.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => ({
+    attachmentIdx: p.index("attachment_idx").on(t.task_id),
+  }),
+);
 
 export const taskCommentTable = p.pgTable(
   "task_comments",
@@ -62,33 +70,49 @@ export const taskCommentTable = p.pgTable(
       .references(() => userTable.id, { onDelete: "cascade" }),
     comment: p.text().notNull(),
     ...timestamps,
-}, (t) => ({
+  },
+  (t) => ({
     commentTaskIdx: p.index("comment_task_idx").on(t.task_id),
     commentUserIdx: p.index("comment_user_idx").on(t.user_id),
-}));
+  }),
+);
 
-export const taskLabelTable = p.pgTable("task_labels", {
-    task_id: p.integer()
-        .notNull()
-        .references(() => taskTable.id, { onDelete: "cascade" }),
-    field_id: p.integer()
-        .notNull()
-        .references(() => customFieldTable.id, {onDelete: "cascade"})
-}, (t) => [p.primaryKey({
-    columns: [t.task_id, t.field_id]
-})])
+export const taskLabelTable = p.pgTable(
+  "task_labels",
+  {
+    task_id: p
+      .integer()
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
+    field_id: p
+      .integer()
+      .notNull()
+      .references(() => customFieldTable.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    p.primaryKey({
+      columns: [t.task_id, t.field_id],
+    }),
+  ],
+);
 
-export const userToTaskTable = p.pgTable("users_to_tasks", {
-    user_id: p.integer()
-        .notNull()
-        .references(() => userTable.id, { onDelete: "cascade" }),
-    task_id: p.integer()
-        .notNull()
-        .references(() => taskTable.id, { onDelete: "cascade" })
-}, (t) => [
+export const userToTaskTable = p.pgTable(
+  "users_to_tasks",
+  {
+    user_id: p
+      .integer()
+      .notNull()
+      .references(() => userTable.id, { onDelete: "cascade" }),
+    task_id: p
+      .integer()
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
+  },
+  (t) => [
     p.primaryKey({ columns: [t.user_id, t.task_id] }),
     {
-        userToTaskIdx: p.index("utt_user_idx").on(t.user_id),
-        taskToUserIdx: p.index("utt_task_idx").on(t.task_id),
-    }
-])
+      userToTaskIdx: p.index("utt_user_idx").on(t.user_id),
+      taskToUserIdx: p.index("utt_task_idx").on(t.task_id),
+    },
+  ],
+);
