@@ -6,7 +6,7 @@ export const userTable = p.pgTable(
   {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
     first_name: p.varchar({ length: 255 }).notNull(),
-    last_name: p.varchar({ length: 255 }).notNull(),
+    last_name: p.varchar({ length: 255 }),
     email: p.varchar({ length: 255 }).notNull().unique(),
     password: p.text().notNull(),
     username: p.varchar({ length: 20 }).unique(),
