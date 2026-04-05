@@ -6,7 +6,7 @@ import { userTable } from "./user.table";
 export const taskTable = p.pgTable(
   "tasks",
   {
-    id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+    id: p.uuid().primaryKey(),
     project_id: p
       .integer()
       .notNull()
@@ -39,7 +39,7 @@ export const taskTable = p.pgTable(
 export const taskAttachmentTable = p.pgTable(
   "task_attachments",
   {
-    id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+    id: p.uuid().primaryKey().defaultRandom(),
     task_id: p
       .integer()
       .notNull()
@@ -59,7 +59,7 @@ export const taskAttachmentTable = p.pgTable(
 export const taskCommentTable = p.pgTable(
   "task_comments",
   {
-    id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+    id: p.uuid().primaryKey().defaultRandom(),
     task_id: p
       .integer()
       .notNull()
@@ -81,11 +81,11 @@ export const taskLabelTable = p.pgTable(
   "task_labels",
   {
     task_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => taskTable.id, { onDelete: "cascade" }),
     field_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => customFieldTable.id, { onDelete: "cascade" }),
   },
@@ -100,11 +100,11 @@ export const userToTaskTable = p.pgTable(
   "users_to_tasks",
   {
     user_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
     task_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => taskTable.id, { onDelete: "cascade" }),
   },

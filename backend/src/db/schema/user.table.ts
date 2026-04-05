@@ -4,7 +4,7 @@ import { timestamps } from "./columns.helpers"
 export const userTable = p.pgTable(
   "users",
   {
-    id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+    id: p.uuid().primaryKey().defaultRandom(),
     first_name: p.varchar({ length: 255 }).notNull(),
     last_name: p.varchar({ length: 255 }),
     email: p.varchar({ length: 255 }).notNull().unique(),

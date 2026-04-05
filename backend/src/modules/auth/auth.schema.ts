@@ -21,6 +21,11 @@ export const RegisterUserSchema = z.object({
         .regex(/[0-9]/, "Must include number"),
 });
 
+export const UpdateUserSchema = RegisterUserSchema.partial().omit({
+    password: true,
+    email: true,
+});
+
 export const LoginUserSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
     password: z.string().trim().min(6),
@@ -36,7 +41,7 @@ export const LogoutUserSchema = z.object({
     fcm_token: z.string().optional()
 })
 
-export const ResendOtpSchema = z.object({
+export const SendOtpSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
 })
 
@@ -65,10 +70,11 @@ export const ChangePasswordSchema = z.object({
 
 
 export type RegisterUser = z.infer<typeof RegisterUserSchema>
+export type UpdateUser = z.infer<typeof UpdateUserSchema>
 export type LoginUser = z.infer<typeof LoginUserSchema>
 export type RefreshToken = z.infer<typeof RefreshTokenSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>
-export type ResendOtp = z.infer<typeof ResendOtpSchema>
+export type SendOtp = z.infer<typeof SendOtpSchema>
 export type VerifyOtp = z.infer<typeof VerifyOtpSchema>
 export type ForgotPassword = z.infer<typeof ForgotPasswordSchema>
 export type ResetPassword = z.infer<typeof ResetPasswordSchema>

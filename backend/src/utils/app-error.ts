@@ -80,3 +80,17 @@ export class NotFoundError extends AppError {
         })        
     }
 }
+
+export class MissingDataError extends AppError{
+    constructor(
+        message = "Missing Required Fields",
+        details?: unknown
+    ) {
+        super(message, {
+            status: 406,
+            code: "UNACCEPTABLE",
+            details
+        })
+    }
+}
+
