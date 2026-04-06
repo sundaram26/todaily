@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const RegisterUserSchema = z.object({
-    first_name: z.string().trim().min(3),
+    first_name: z.string().trim().min(3).optional(),
     last_name: z.string().trim().optional(),
     username: z
         .string()
@@ -41,6 +41,11 @@ export const LogoutUserSchema = z.object({
     fcm_token: z.string().optional()
 })
 
+export const OtpSchema = z.object({
+    user_id: z.number(),
+    otp: z.string(),
+})
+
 export const SendOtpSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
 })
@@ -74,6 +79,7 @@ export type UpdateUser = z.infer<typeof UpdateUserSchema>
 export type LoginUser = z.infer<typeof LoginUserSchema>
 export type RefreshToken = z.infer<typeof RefreshTokenSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>
+export type Otp = z.infer<typeof OtpSchema>
 export type SendOtp = z.infer<typeof SendOtpSchema>
 export type VerifyOtp = z.infer<typeof VerifyOtpSchema>
 export type ForgotPassword = z.infer<typeof ForgotPasswordSchema>
