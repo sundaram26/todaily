@@ -1,7 +1,7 @@
 import { db } from "@/db"
 import { otpTable, userTable } from "@/db/schema"
 import { eq, lt, or } from "drizzle-orm"
-import { Otp, RegisterUser, UpdateUser } from "./auth.schema"
+import { Otp, RegisterUser, UpdateUser, VerifyOtp } from "./auth.schema"
 import { AppError } from "@/utils/app-error"
 import z from "zod"
 
@@ -52,13 +52,24 @@ export class AuthRepository {
         const [updatedData] = await db.update(userTable).set(cleanData).where(eq(userTable.id, id)).returning()
 
         if (!updatedData) {
-            return new AppError("Failed to updated user!")
+            throw new AppError("Failed to updated user!")
         }
 
         return updatedData;
     }
 
     async addOtp(data: Otp) {
+        const existingOtp = await db.query.otpTable.findFirst({ where: eq(otpTable.user_id, data.user_id) });
+        
+        
+        if (existingOtp) {
+            const deleted = await db.delete(otpTable).where(eq(otpTable.user_id, data.user_id));
+
+            if (!deleted) {
+                throw new AppError("Error deleting old otps!")
+            }
+        }
+        
         const date = new Date();
         const otp_expiry = new Date(date.getTime() + 5 * 60 * 1000);
 
@@ -76,6 +87,21 @@ export class AuthRepository {
 
     async deleteExpiredOtp() {
         const now = new Date();
-        return await db.delete(otpTable).where(lt(otpTable.otp_expiry, now))
+        return await db.delete(otpTable).where(lt(otpTable.otp_expiry, now));
+    }
+
+    async verifyOtp(data: VerifyOtp) {
+        const userOtp = await db.query.otpTable.findFirst({ where: eq(otpTable.user_id, data.user_id) });
+        if (!userOtp) {
+            throw new AppError("User otp not found!");
+        }
+
+        const now = new Date();
+        if (userOtp.otp_expiry < now) {
+            const isMatching: boolean = (userOtp.otp === data.otp);
+            return isMatching;
+        }
+        
+        return false;
     }
 }

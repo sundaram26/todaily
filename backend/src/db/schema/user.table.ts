@@ -20,9 +20,9 @@ export const userTable = p.pgTable(
 export const otpTable = p.pgTable(
   "otps",
   {
-    user_id: p.integer().notNull().references(() =>  userTable.id, { onDelete: "cascade"}),
+    user_id: p.uuid().notNull().references(() =>  userTable.id, { onDelete: "cascade"}),
     otp: p.varchar({length: 6}).notNull(),
-    otp_expiry: p.timestamp({ withTimezone: true }),
+    otp_expiry: p.timestamp({ withTimezone: true }).notNull(),
     ...timestamps
   }
 )

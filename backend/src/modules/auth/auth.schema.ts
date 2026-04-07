@@ -42,7 +42,7 @@ export const LogoutUserSchema = z.object({
 })
 
 export const OtpSchema = z.object({
-    user_id: z.number(),
+    user_id: z.string().uuid(),
     otp: z.string(),
 })
 
@@ -51,6 +51,7 @@ export const SendOtpSchema = z.object({
 })
 
 export const VerifyOtpSchema = z.object({
+    user_id: z.string().uuid(),
     otp: z.string().trim().length(6).regex(/^\d+$/),
 });
 
