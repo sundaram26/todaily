@@ -1,8 +1,8 @@
 import { db } from "@/db"
 import { otpTable, userTable } from "@/db/schema"
-import { eq, lt, or } from "drizzle-orm"
-import { Otp, RegisterUser, UpdateUser, VerifyOtp } from "./auth.schema"
-import { AppError } from "@/utils/app-error"
+import { and, eq, lt, or } from "drizzle-orm"
+import { Otp, OtpType, RegisterUser, UpdateUser, VerifyOtp } from "./auth.schema"
+import { AppError, BadRequestError } from "@/utils/app-error"
 import z from "zod"
 
 export type CreateUserInput = Omit<RegisterUser, "password"> & {
@@ -47,7 +47,7 @@ export class AuthRepository {
 
     async updateUser(id: string, data: UpdateUser) {
         const cleanData = Object.fromEntries(
-            Object.entries(data).filter((_, v) => v !== undefined)
+            Object.entries(data).filter(([_, v]) => v !== undefined)
         )
         const [updatedData] = await db.update(userTable).set(cleanData).where(eq(userTable.id, id)).returning()
 
@@ -61,22 +61,16 @@ export class AuthRepository {
     async addOtp(data: Otp) {
         const existingOtp = await db.query.otpTable.findFirst({ where: eq(otpTable.user_id, data.user_id) });
         
+        const now = new Date();
         
+        if ((existingOtp && existingOtp.otp_expiry > now)) {
+            throw new BadRequestError("Otp already sent. Please wait.");
+        }
         if (existingOtp) {
-            const deleted = await db.delete(otpTable).where(eq(otpTable.user_id, data.user_id));
-
-            if (!deleted) {
-                throw new AppError("Error deleting old otps!")
-            }
+            await db.delete(otpTable).where(eq(otpTable.user_id, data.user_id));
         }
         
-        const date = new Date();
-        const otp_expiry = new Date(date.getTime() + 5 * 60 * 1000);
-
-        const [otp] = await db.insert(otpTable).values({
-            ...data,
-            otp_expiry
-        }).returning();
+        const [otp] = await db.insert(otpTable).values(data).returning();
 
         if (!otp) {
             throw new AppError("OTP creation failed");
@@ -90,18 +84,18 @@ export class AuthRepository {
         return await db.delete(otpTable).where(lt(otpTable.otp_expiry, now));
     }
 
-    async verifyOtp(data: VerifyOtp) {
-        const userOtp = await db.query.otpTable.findFirst({ where: eq(otpTable.user_id, data.user_id) });
-        if (!userOtp) {
-            throw new AppError("User otp not found!");
-        }
+    async findOtpByUserIdAndType(user_id: string, otp_type: OtpType) {
+        return await db.query.otpTable.findFirst({
+            where: and(
+                eq(otpTable.user_id, user_id),
+                eq(otpTable.type, otp_type)
+            )
+        })
+    }    
 
-        const now = new Date();
-        if (userOtp.otp_expiry < now) {
-            const isMatching: boolean = (userOtp.otp === data.otp);
-            return isMatching;
-        }
-        
-        return false;
+    async deleteOtpById(id: string) {
+        return await db.delete(otpTable).where(eq(otpTable.id, id));
     }
+
+    // async st
 }

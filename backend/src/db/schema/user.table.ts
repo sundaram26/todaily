@@ -17,11 +17,15 @@ export const userTable = p.pgTable(
     userEmailIdx: p.index("user_email_idx").on(t.email),
 }));
 
+const otpType = p.pgEnum("otp_type", ["email_verification", "password_reset"])
+
 export const otpTable = p.pgTable(
   "otps",
   {
+    id: p.uuid().primaryKey().defaultRandom(),
     user_id: p.uuid().notNull().references(() =>  userTable.id, { onDelete: "cascade"}),
-    otp: p.varchar({length: 6}).notNull(),
+    otp: p.varchar({ length: 6 }).notNull(),
+    type: otpType().notNull(),
     otp_expiry: p.timestamp({ withTimezone: true }).notNull(),
     ...timestamps
   }

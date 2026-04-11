@@ -1,12 +1,13 @@
 import crypto from "crypto";
 
-export const otpGenerator = () => {
+export const generateOtp = () => {
     try {
         const otp = crypto.randomInt(1000000, 9999999);
         const now = new Date();
-        const otp_expiry = new Date(now.getTime() + 5 * 60 * 60);
+        const otp_expiry = new Date(now.getTime() + 5 * 60 * 1000);
+        
         return {
-            otp,
+            otp: String(otp),
             otp_expiry
         };
     } catch (err: unknown) {
