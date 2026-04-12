@@ -1,7 +1,5 @@
 import z from "zod";
 
-
-
 export const RegisterUserSchema = z.object({
     username: z
         .string()
@@ -32,6 +30,15 @@ export const LoginUserSchema = z.object({
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),
 });
+
+export const UserSessionSchema = z.object({
+    user_id: z.string().uuid(),
+    refresh_token: z.string().min(1),
+    expires_at: z.date(),
+    device_info: z.object({}).passthrough().optional(),
+    ip_address: z.string(),
+    absolute_expiry: z.date()
+})
 
 export const RefreshTokenSchema = z.object({
     refresh_token: z.string().trim()
@@ -84,6 +91,7 @@ export const ChangePasswordSchema = z.object({
 export type RegisterUser = z.infer<typeof RegisterUserSchema>
 export type UpdateUser = z.infer<typeof UpdateUserSchema>
 export type LoginUser = z.infer<typeof LoginUserSchema>
+export type UserSession = z.infer<typeof UserSessionSchema>
 export type RefreshToken = z.infer<typeof RefreshTokenSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>
 export type Otp = z.infer<typeof OtpSchema>

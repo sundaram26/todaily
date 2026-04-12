@@ -1,7 +1,7 @@
 import { db } from "@/db"
-import { otpTable, userTable } from "@/db/schema"
+import { otpTable, sessionTable, userTable } from "@/db/schema"
 import { and, eq, lt, or } from "drizzle-orm"
-import { Otp, OtpType, RegisterUser, UpdateUser, VerifyOtp } from "./auth.schema"
+import { Otp, OtpType, RegisterUser, UpdateUser, UserSession, VerifyOtp } from "./auth.schema"
 import { AppError, BadRequestError } from "@/utils/app-error"
 import z from "zod"
 
@@ -97,5 +97,17 @@ export class AuthRepository {
         return await db.delete(otpTable).where(eq(otpTable.id, id));
     }
 
-    // async st
+    async createUserSession(data: UserSession) {
+        const session = await db.insert(sessionTable).values(data);
+
+        if (!session) {
+            throw new AppError("Unable to create user session!");
+        }
+
+        return session;
+    }
+
+    async findRefreshTokenByUserId(token: string) {
+        return db.query.sessionTable.findFirst({ where: eq(sessionTable.refresh_token, token) });
+    }
 }

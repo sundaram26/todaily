@@ -1,10 +1,11 @@
-import { LoginUser, RegisterUser, SendOtp, VerifyOtp } from "./auth.schema";
+import { LoginUser, RefreshToken, RegisterUser, SendOtp, VerifyOtp } from "./auth.schema";
 import { AppError, BadRequestError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { AuthRepository, CreateUserInput } from "./auth.repository";
 import { comparePassword, hashPassword } from "@/services/hash-password.service";
 import { generateOtp } from "@/services/otp.service";
 import { resendOtpEmail, sendOtpEmail } from "@/utils/emails";
 import { SmtpType } from "../system-config/system-config.repository";
+import { generateAccessToken, generateRefreshToken, JwtToken } from "./auth.util";
 
 export class AuthService {
     constructor(private repo: AuthRepository) { }
@@ -136,7 +137,23 @@ export class AuthService {
         if (!matchPassword) {
             throw new UnauthorizedError("Invalid credentials!");
         }
+        
+        const payload: JwtToken = {
+            user_id: existingUser.id,
+            username: existingUser.username,
+            email: existingUser.email
+        }
 
+        const accessToken = generateAccessToken(payload);        
+        const refreshToken = generateRefreshToken(payload);   
+        
+        return {
+            accessToken,
+            refreshToken
+        }
+    }
+
+    async refreshToken(refreshToken: RefreshToken) {
         
     }
 }

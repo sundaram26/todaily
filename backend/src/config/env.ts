@@ -1,11 +1,15 @@
+import { AppError } from '@/utils/app-error';
 import dotenv from 'dotenv'
+import { EnvSchema, EnvType } from './config.schema';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || "development"}` })
 
-export const {
-    DATABASE_URL,
-} = process.env
+const parsedEnv = EnvSchema.safeParse(process.env);
 
-console.log(
-    DATABASE_URL
-)
+if (!parsedEnv.success) {
+    console.error("Invalid enviroment variable!");
+    console.error(parsedEnv.error.format());
+    process.exit(1);
+}
+
+export const env: EnvType = parsedEnv.data;
