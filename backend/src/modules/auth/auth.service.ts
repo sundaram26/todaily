@@ -1,11 +1,12 @@
-import { LoginUser, RefreshToken, RegisterUser, SendOtp, VerifyOtp } from "./auth.schema";
+import { LoginUser, RegisterUser, SendOtp, VerifyOtp } from "./auth.schema";
 import { AppError, BadRequestError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { AuthRepository, CreateUserInput } from "./auth.repository";
 import { comparePassword, hashPassword } from "@/services/hash-password.service";
 import { generateOtp } from "@/services/otp.service";
 import { resendOtpEmail, sendOtpEmail } from "@/utils/emails";
 import { SmtpType } from "../system-config/system-config.repository";
-import { generateAccessToken, generateRefreshToken, JwtToken } from "./auth.util";
+import { generateAccessToken, generateRefreshToken, getExpiryDate, JwtToken, verifyJwtRefreshToken } from "./auth.util";
+import { env } from "@/config/env";
 
 export class AuthService {
     constructor(private repo: AuthRepository) { }
@@ -74,7 +75,7 @@ export class AuthService {
         return result;
     }
 
-    async verifyOtp(data: VerifyOtp) {
+    async verifyNewOtp(data: VerifyOtp) {
         const userOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.type);
 
         if (!userOtp) {
@@ -89,7 +90,12 @@ export class AuthService {
 
         if (userOtp.otp === data.otp) {
             await this.repo.deleteOtpById(userOtp.id);
-          return true;
+            
+            if (data.type === "email_verification") {
+                await this.repo.updateUser(userOtp.id, { is_verified: true });
+            }
+            
+            return true;
         }
 
         return false;
@@ -132,7 +138,7 @@ export class AuthService {
             throw new NotFoundError("User not found!");
         }
 
-        const matchPassword = comparePassword(data.password, existingUser.password);
+        const matchPassword = await comparePassword(data.password, existingUser.password);
 
         if (!matchPassword) {
             throw new UnauthorizedError("Invalid credentials!");
@@ -146,6 +152,19 @@ export class AuthService {
 
         const accessToken = generateAccessToken(payload);        
         const refreshToken = generateRefreshToken(payload);   
+
+        const userSession = await this.repo.createUserSession({
+            user_id: existingUser.id,
+            refresh_token: refreshToken,
+            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
+            ip_address: data.ip_address,
+            absolute_expiry: getExpiryDate(env.SESSION_EXPIRY),
+            device_info: data.device_info
+        })
+
+        if (!userSession) {
+            throw new AppError("Unable to create user session!")
+        }
         
         return {
             accessToken,
@@ -153,7 +172,50 @@ export class AuthService {
         }
     }
 
-    async refreshToken(refreshToken: RefreshToken) {
-        
+    async refreshToken(token: string) {
+        const decode = verifyJwtRefreshToken(token);
+
+        const storedToken = await this.repo.findSessionByRefreshToken(token);
+
+        if (!storedToken) {
+            throw new NotFoundError("Session not found!");
+        }
+
+        const now = new Date();
+
+        if (storedToken.expires_at < now || storedToken.absolute_expiry < now) {
+            throw new UnauthorizedError("Invalid or expired session!");
+        }
+
+        const payload = {
+            user_id: decode.user_id,
+            username: decode.username,
+            email: decode.email
+        }
+
+        const accessToken = generateAccessToken(payload);
+        const refreshToken = generateRefreshToken(payload);
+
+        const userSession = await this.repo.updateUserSession(token,{
+            refresh_token: refreshToken,
+            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET)
+        });
+
+        if (!userSession) {
+            throw new AppError("Unable to create user session!");
+        }
+
+        return {
+            accessToken,
+            refreshToken
+        }
     }
+
+    async logout() { }
+    
+    async forgotPassword() { }
+
+    async resetPassword() { }
+
+    async changePassword() { }
 }

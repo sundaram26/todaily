@@ -1,7 +1,7 @@
 import { db } from "@/db"
 import { otpTable, sessionTable, userTable } from "@/db/schema"
 import { and, eq, lt, or } from "drizzle-orm"
-import { Otp, OtpType, RegisterUser, UpdateUser, UserSession, VerifyOtp } from "./auth.schema"
+import { Otp, OtpType, RegisterUser, UpdateUser, UpdateUserSession, UserSession, VerifyOtp } from "./auth.schema"
 import { AppError, BadRequestError } from "@/utils/app-error"
 import z from "zod"
 
@@ -98,7 +98,7 @@ export class AuthRepository {
     }
 
     async createUserSession(data: UserSession) {
-        const session = await db.insert(sessionTable).values(data);
+        const [session] = await db.insert(sessionTable).values(data).returning();
 
         if (!session) {
             throw new AppError("Unable to create user session!");
@@ -107,7 +107,24 @@ export class AuthRepository {
         return session;
     }
 
-    async findRefreshTokenByUserId(token: string) {
+    async updateUserSession(refresh_token: string, data: UpdateUserSession) {
+        const cleanData = Object.fromEntries(
+            Object.entries(data).filter(([_, v]) => v !== undefined)
+        )
+        const updatedSession = await db.update(sessionTable).set(cleanData).where(eq(sessionTable.refresh_token, refresh_token)).returning();
+
+        if (!updatedSession) {
+            throw new AppError("Unable to update the user session!");
+        }
+
+        return updatedSession;
+    }
+
+    async findSessionByRefreshToken(token: string) {
         return db.query.sessionTable.findFirst({ where: eq(sessionTable.refresh_token, token) });
+    }
+
+    async deleteSessionByRefreshToken(token: string) {
+        return db.delete(sessionTable).where(eq(sessionTable.refresh_token, token));
     }
 }

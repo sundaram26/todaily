@@ -47,3 +47,18 @@ export const verifyJwtRefreshToken = (token: string) => {
 
     return decoded as JwtToken;
 }
+
+export const getExpiryDate = (timestring: string): Date => {
+    const now = Date.now();
+    const match = timestring.match(/^(\d+)([smhd])$/);
+    if (!match) throw new AppError("Invalid time format");
+
+    const [, amount, unit] = match;
+    if (!amount) {
+        throw new AppError("Invalid amount!")
+    }
+    const value = parseInt(amount);
+    const multipliers = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
+
+    return new Date(now + value * multipliers[unit as keyof typeof multipliers])
+}

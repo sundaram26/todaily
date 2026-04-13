@@ -19,14 +19,20 @@ export const RegisterUserSchema = z.object({
         .regex(/[0-9]/, "Must include number"),
 });
 
-export const UpdateUserSchema = RegisterUserSchema.partial().omit({
-    password: true,
-    email: true,
-});
+export const UpdateUserSchema = RegisterUserSchema
+    .partial()
+    .omit({
+        password: true,
+        email: true,
+    })
+    .extend({
+        is_verified: z.boolean().optional()
+    });
 
 export const LoginUserSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
     password: z.string().trim().min(6),
+    ip_address: z.string(),
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),
 });
@@ -40,9 +46,7 @@ export const UserSessionSchema = z.object({
     absolute_expiry: z.date()
 })
 
-export const RefreshTokenSchema = z.object({
-    refresh_token: z.string().trim()
-})
+export const UpdateUserSessionSchema = UserSessionSchema.partial();
 
 export const LogoutUserSchema = z.object({
     fcm_token: z.string().optional()
@@ -92,7 +96,7 @@ export type RegisterUser = z.infer<typeof RegisterUserSchema>
 export type UpdateUser = z.infer<typeof UpdateUserSchema>
 export type LoginUser = z.infer<typeof LoginUserSchema>
 export type UserSession = z.infer<typeof UserSessionSchema>
-export type RefreshToken = z.infer<typeof RefreshTokenSchema>
+export type UpdateUserSession = z.infer<typeof UpdateUserSessionSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>
 export type Otp = z.infer<typeof OtpSchema>
 export type OtpType = z.infer<typeof OtpTypeEnum>

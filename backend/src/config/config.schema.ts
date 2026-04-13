@@ -6,6 +6,7 @@ export const EnvSchema = z.object({
     JWT_ACCESS_EXPIRY: z.string(),
     JWT_REFRESH_SECRET: z.string().min(1),
     JWT_REFRESH_EXPIRY: z.string(),
+    SESSION_EXPIRY: z.string(),
 })
 
 export type EnvType = z.infer<typeof EnvSchema>;
