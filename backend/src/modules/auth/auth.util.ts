@@ -62,3 +62,18 @@ export const getExpiryDate = (timestring: string): Date => {
 
     return new Date(now + value * multipliers[unit as keyof typeof multipliers])
 }
+
+export const getCookieMaxAge = (timestring: string): number => {
+    const match = timestring.match(/^(\d+)([smhd])$/);
+    if (!match) throw new AppError("Invalid time format");
+
+    const [, amount, unit] = match;
+    if (!amount) {
+      throw new AppError("Invalid amount!");
+    }
+
+    const value = parseInt(amount);
+    const multiplier = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
+
+    return value * multiplier[unit as keyof typeof multiplier];
+}

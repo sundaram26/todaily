@@ -31,7 +31,10 @@ export const UpdateUserSchema = RegisterUserSchema
 
 export const LoginUserSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
-    password: z.string().trim().min(6),
+    password: z.string().trim()
+        .min(6)
+        .regex(/[A-Z]/, "Must include uppercase")
+        .regex(/[0-9]/, "Must include number"),
     ip_address: z.string(),
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),
@@ -87,9 +90,14 @@ export const ResetPasswordSchema = z.object({
 });
 
 export const ChangePasswordSchema = z.object({
-    old_password: z.string().trim().min(6),
-    new_password: z.string().trim().min(6)
-})
+  old_password: z.string().trim().min(6),
+  new_password: z
+    .string()
+    .trim()
+    .min(6)
+    .regex(/[A-Z]/, "Must include uppercase")
+    .regex(/[0-9]/, "Must include number"),
+});
 
 
 export type RegisterUser = z.infer<typeof RegisterUserSchema>

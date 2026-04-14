@@ -75,7 +75,7 @@ export class AuthService {
         return result;
     }
 
-    async verifyNewOtp(data: VerifyOtp) {
+    async verifyOtp(data: VerifyOtp) {
         const userOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.type);
 
         if (!userOtp) {
@@ -92,7 +92,7 @@ export class AuthService {
             await this.repo.deleteOtpById(userOtp.id);
             
             if (data.type === "email_verification") {
-                await this.repo.updateUser(userOtp.id, { is_verified: true });
+                await this.repo.updateUser(data.user_id, { is_verified: true });
             }
             
             return true;
@@ -165,6 +165,7 @@ export class AuthService {
         if (!userSession) {
             throw new AppError("Unable to create user session!")
         }
+
         
         return {
             accessToken,
@@ -198,7 +199,8 @@ export class AuthService {
 
         const userSession = await this.repo.updateUserSession(token,{
             refresh_token: refreshToken,
-            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET)
+            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
+            absolute_expiry: storedToken.absolute_expiry
         });
 
         if (!userSession) {
@@ -211,7 +213,15 @@ export class AuthService {
         }
     }
 
-    async logout() { }
+    async logout(token: string) { 
+        const loggedOut = await this.repo.deleteSessionByRefreshToken(token);
+
+        if (!loggedOut) {
+            throw new AppError("Unable to log out!");
+        }
+
+        return loggedOut;
+    }
     
     async forgotPassword() { }
 
