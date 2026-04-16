@@ -138,6 +138,14 @@ export class AuthService {
             throw new NotFoundError("User not found!");
         }
 
+        if (!existingUser.password) {
+            throw new UnauthorizedError("Please use SSO to login. Password not set for this account.");
+        }
+
+        if (!data.password) {
+            throw new UnauthorizedError("Password required!")
+        }
+
         const matchPassword = await comparePassword(data.password, existingUser.password);
 
         if (!matchPassword) {
@@ -222,10 +230,17 @@ export class AuthService {
 
         return loggedOut;
     }
-    
-    async forgotPassword() { }
 
-    async resetPassword() { }
+    // TODO: Complete these after oAuth 2.0 and openId Connect    
+    // async forgotPassword(email: string) { 
+    //     const user = await this.repo.findUserByEmail(email);
 
-    async changePassword() { }
+    //     if (!user) {
+    //         throw new NotFoundError("User not found!");
+    //     }      
+    // }
+
+    // async resetPassword() { }
+
+    // async changePassword() { }
 }

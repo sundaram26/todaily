@@ -26,7 +26,7 @@ export const UpdateUserSchema = RegisterUserSchema
         email: true,
     })
     .extend({
-        is_verified: z.boolean().optional()
+        is_verified: z.boolean().optional(),
     });
 
 export const LoginUserSchema = z.object({
@@ -38,6 +38,7 @@ export const LoginUserSchema = z.object({
     ip_address: z.string(),
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),
+    provider: z.enum(["local"])
 });
 
 export const UserSessionSchema = z.object({
