@@ -1,4 +1,3 @@
-import { AppError } from '@/utils/app-error';
 import dotenv from 'dotenv'
 import { EnvSchema, EnvType } from './config.schema';
 

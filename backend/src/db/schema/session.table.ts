@@ -14,4 +14,7 @@ export const sessionTable = p.pgTable("sessions", {
   ip_address: p.varchar({ length: 45 }),
   absolute_expiry: p.timestamp().notNull(),
   ...timestamps,
-});
+}, (t) => ({
+  session_user_id_idx: p.index("session_user_id_idx").on(t.user_id),
+  session_expires_at_idx: p.index("session_expires_at_idx").on(t.expires_at)  
+}));

@@ -96,7 +96,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies.refresh_token;
 
     await authService.logout(refreshToken);
 

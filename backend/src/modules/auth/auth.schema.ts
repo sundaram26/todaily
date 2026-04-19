@@ -41,6 +41,22 @@ export const LoginUserSchema = z.object({
     provider: z.enum(["local"])
 });
 
+export const providerTypes = z.enum(["google", "local"]);
+
+export const GoogleAuthSchema = z.object({
+    first_name: z.string().trim().optional(),
+    last_name: z.string().trim().optional(),
+    email: z.string().trim(),
+    username: z.string(),
+    profile: z.string().trim().optional(),
+    is_verified: z.boolean(),
+})
+
+export const AccountSchema = z.object({
+    provider: providerTypes,
+    provider_account_id: z.string(),
+})
+
 export const UserSessionSchema = z.object({
     user_id: z.string().uuid(),
     refresh_token: z.string().min(1),
@@ -104,6 +120,9 @@ export const ChangePasswordSchema = z.object({
 export type RegisterUser = z.infer<typeof RegisterUserSchema>
 export type UpdateUser = z.infer<typeof UpdateUserSchema>
 export type LoginUser = z.infer<typeof LoginUserSchema>
+export type ProviderType = z.infer<typeof providerTypes>
+export type GoogleAuth = z.infer<typeof GoogleAuthSchema>
+export type Account = z.infer<typeof AccountSchema>
 export type UserSession = z.infer<typeof UserSessionSchema>
 export type UpdateUserSession = z.infer<typeof UpdateUserSessionSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>

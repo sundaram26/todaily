@@ -1,7 +1,7 @@
 import { db } from "@/db"
-import { otpTable, sessionTable, userTable } from "@/db/schema"
+import { accountTable, otpTable, sessionTable, userTable } from "@/db/schema"
 import { and, eq, lt, or } from "drizzle-orm"
-import { Otp, OtpType, RegisterUser, UpdateUser, UpdateUserSession, UserSession, VerifyOtp } from "./auth.schema"
+import { Account, GoogleAuth, Otp, OtpType, ProviderType, RegisterUser, UpdateUser, UpdateUserSession, UserSession, VerifyOtp } from "./auth.schema"
 import { AppError, BadRequestError } from "@/utils/app-error"
 import z from "zod"
 
@@ -45,6 +45,44 @@ export class AuthRepository {
         return user;
     }
 
+    async createGoogleAuthUserWithAccount(userData: GoogleAuth, accountData: Account) {
+        return await db.transaction(async (tx) => {
+            const [user] = await tx.insert(userTable).values(userData).returning();
+
+            if (!user) {
+                throw new AppError("User creation failed");
+            }
+
+            const [account] = await tx.insert(accountTable).values({ user_id: user.id, ...accountData }).returning();
+
+            if (!account) {
+                tx.rollback();
+                throw new AppError("Account creation failed!");
+            }
+
+            return user;
+        })
+    }
+
+    async createAccount(user_id: string, data: Account) {
+        const [account] = await db.insert(accountTable).values({ user_id, ...data }).returning();
+
+        if (!account) {
+            throw new AppError("Unable to find the provider!")
+        }
+
+        return account;
+    }
+
+    async findAccount(provider: ProviderType, user_id: string) {
+        return db.query.accountTable.findFirst({
+            where: and(
+                eq(accountTable.provider, provider),
+                eq(accountTable.user_id, user_id)
+            )
+        })
+    }
+
     async updateUser(id: string, data: UpdateUser) {
         const cleanData = Object.fromEntries(
             Object.entries(data).filter(([_, v]) => v !== undefined)
@@ -58,22 +96,31 @@ export class AuthRepository {
         return updatedData;
     }
 
-    async addOtp(data: Otp) {
-        const existingOtp = await db.query.otpTable.findFirst({ where: eq(otpTable.user_id, data.user_id) });
-        
-        const now = new Date();
-        
-        if ((existingOtp && existingOtp.otp_expiry > now)) {
-            throw new BadRequestError("Otp already sent. Please wait.");
-        }
-        if (existingOtp) {
-            await db.delete(otpTable).where(eq(otpTable.user_id, data.user_id));
-        }
-        
-        const [otp] = await db.insert(otpTable).values(data).returning();
+    async addOtp(data: Otp) {        
+        const [otp] = await db.insert(otpTable)
+            .values(data)
+            .onConflictDoUpdate({
+                target: otpTable.user_id,
+                set: {
+                    otp: data.otp,
+                    otp_expiry: data.otp_expiry,
+                    type: data.type,
+                    updated_at: new Date()
+                }
+            })
+            .returning();
 
         if (!otp) {
             throw new AppError("OTP creation failed");
+        }
+
+        const now = new Date();
+        const timeSinceLastOtp = otp.updated_at
+            ? now.getTime() - otp.updated_at.getTime()
+            : Infinity;
+        
+        if (timeSinceLastOtp < 60 * 1000) {
+            throw new BadRequestError("Please wait before requesting another otp!")
         }
 
         return otp;
@@ -111,7 +158,10 @@ export class AuthRepository {
         const cleanData = Object.fromEntries(
             Object.entries(data).filter(([_, v]) => v !== undefined)
         )
-        const updatedSession = await db.update(sessionTable).set(cleanData).where(eq(sessionTable.refresh_token, refresh_token)).returning();
+        const [updatedSession] = await db.update(sessionTable)
+            .set(cleanData)
+            .where(eq(sessionTable.refresh_token, refresh_token))
+            .returning();
 
         if (!updatedSession) {
             throw new AppError("Unable to update the user session!");

@@ -1,15 +1,15 @@
-
 type UserInfo = {
+    id: string,
     email: string,
-    username: string,
+    name?: string,
     firstname?: string,
     lastname?: string,
     profile?: string,
+    provider: "google"
 }
 
+
 export type OAuthProvider = {
-
-
     getAuthUrl(): string;
 
     getTokens(code: string): Promise<unknown>;

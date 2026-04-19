@@ -7,6 +7,7 @@ import { resendOtpEmail, sendOtpEmail } from "@/utils/emails";
 import { SmtpType } from "../system-config/system-config.repository";
 import { generateAccessToken, generateRefreshToken, getExpiryDate, JwtToken, verifyJwtRefreshToken } from "./auth.util";
 import { env } from "@/config/env";
+import crypto from "crypto"
 
 export class AuthService {
     constructor(private repo: AuthRepository) { }
@@ -14,12 +15,8 @@ export class AuthService {
     async register(data: RegisterUser) {
         const existingUser = await this.repo.findByEmailOrUsername(data.email, data.username);
 
-        if (existingUser?.email === data.email) {
-            throw new BadRequestError("Email already in use");
-        }
-
-        if (existingUser?.username === data.username) {
-            throw new BadRequestError("Username already taken")
+        if (existingUser?.email === data.email || existingUser?.username === data.username) {
+            throw new BadRequestError("Username or email already in use");
         }
 
         const hashedPassword = await hashPassword(data.password);
@@ -88,7 +85,7 @@ export class AuthService {
             throw new AppError("OTP expired!");
         }
 
-        if (userOtp.otp === data.otp) {
+        if (crypto.timingSafeEqual(Buffer.from(userOtp.otp), Buffer.from(data.otp))) {
             await this.repo.deleteOtpById(userOtp.id);
             
             if (data.type === "email_verification") {
@@ -134,12 +131,8 @@ export class AuthService {
     async login(data: LoginUser) {
         const existingUser = await this.repo.findUserByEmail(data.email);
 
-        if (!existingUser) {
+        if (!existingUser || !existingUser.password) {
             throw new NotFoundError("User not found!");
-        }
-
-        if (!existingUser.password) {
-            throw new UnauthorizedError("Please use SSO to login. Password not set for this account.");
         }
 
         if (!data.password) {
@@ -173,8 +166,7 @@ export class AuthService {
         if (!userSession) {
             throw new AppError("Unable to create user session!")
         }
-
-        
+ 
         return {
             accessToken,
             refreshToken

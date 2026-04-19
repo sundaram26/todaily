@@ -12,7 +12,7 @@ export const userTable = p.pgTable(
     password: p.text(),
     username: p.varchar({ length: 20 }).notNull().unique(),
     is_verified: p.boolean().default(false),
-    is_active: p.boolean().default(false),
+    is_active: p.boolean().default(true),
     ...timestamps,
 }, (t) => ({
     userEmailIdx: p.index("user_email_idx").on(t.email),
@@ -29,7 +29,10 @@ export const otpTable = p.pgTable(
     type: otpType().notNull(),
     otp_expiry: p.timestamp({ withTimezone: true }).notNull(),
     ...timestamps
-  }
+  }, (t) => ({
+    otpUserIdIdx: p.index("otp_user_id_idx").on(t.user_id),
+    otpExpiryIdx: p.index("otp_expiry_idx").on(t.otp_expiry)
+  })
 )
 
 const providerType = p.pgEnum("provider_type", ["google", "local"]);
