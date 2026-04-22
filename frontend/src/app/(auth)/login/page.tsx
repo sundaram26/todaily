@@ -1,10 +1,9 @@
+import Login from "@/features/auth/components/login";
 
 
 const login = () => {
     return (
-        <div>
-
-        </div>
+        <Login />
     )
 }
 
