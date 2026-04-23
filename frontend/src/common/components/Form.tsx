@@ -2,10 +2,24 @@ import { cn } from "@/lib/utils";
 import React from "react";
 
 
-const Form = () => {
-    // return (
-        
-    // )
+const Form = (
+  {
+    children,
+    className,
+    ...props
+  }: {
+      children: React.ReactNode;
+      className?: string;
+  } & React.FormHTMLAttributes<HTMLFormElement>
+) => {
+    return (
+      <form
+        {...props}
+        className={cn("space-y-6 w-full max-w-md mx-auto", className)}
+      >
+        {children}
+      </form>
+    )
 }
 
 const FormField = ({
@@ -18,7 +32,7 @@ const FormField = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 has-invalid:bg-red-50 rounded-md p-2",
+        "flex flex-col gap-2",
         className,
       )}
     >
@@ -29,15 +43,21 @@ const FormField = ({
 
 const FormLabel = ({
   children,
+  required,
   className,
   ...props
 }: {
-  children: React.ReactNode;
-  className?: string;
+    children: React.ReactNode;
+    required?: boolean;
+    className?: string;
 } & React.LabelHTMLAttributes<HTMLLabelElement>) => {
   return (
-    <label {...props} className={cn("text-neutral-700 font-medium", className)}>
+    <label
+      {...props}
+      className={cn("text-neutral-700 font-medium", className)}
+    >
       {children}
+      {required && <span className="text-red-500">*</span>}
     </label>
   );
 };
@@ -50,7 +70,6 @@ const FormInput = ({
     <input
       {...props}
       className={cn(
-        "focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-4 focus:border-gray-300 border border-transparent focus:bg-gray-100 px-4 py-2 bg-white rounded-lg shadow-input transition-all duration-200 placeholder:text-neutral-300",
         className,
       )}
     />
