@@ -1,21 +1,21 @@
 import Image from "next/image";
+import { images } from "@/assets";
 
 
 
 export const AuthLayout = ({ children }: { children: React.ReactNode; }) => {
     return (
-      <div className="h-screen w-full bg-primary-subtle flex p-8">
-        <div className="h-full w-[50%] flex justify-center items-center">
+      <div className="h-screen w-full bg-primary-subtle flex p-12">
+        <div className="w-[50%] max-w-4xl mx-auto">
           {children}
         </div>
         <div className="relative h-full w-[50%] rounded-4xl overflow-hidden">
           <Image
-            src="/auth-side.png"
+            loading="eager"
+            src={images.authSide}
             fill
             alt="Side Image"
           />
-          {/* <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent-foreground/40 to-transparent" /> */}
-          {/* <div className="pointer-events-none absolute inset-0 shadow-[inset_0px_20px_20px_80px_rgba(0,0,0,0.5)]" /> */}
         </div>
       </div>
     );

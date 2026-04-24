@@ -79,10 +79,13 @@ function Field({
       role="group"
       data-slot="field"
       data-orientation={orientation}
-      className={cn(fieldVariants({ orientation }), className)}
+      className={cn(
+        fieldVariants({ orientation }),
+        className,
+      )}
       {...props}
     />
-  )
+  );
 }
 
 function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -163,7 +166,7 @@ function FieldSeparator({
       <Separator className="absolute inset-0 top-1/2" />
       {children && (
         <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+          className="relative mx-auto block w-fit bg-primary-subtle px-2 text-muted-foreground"
           data-slot="field-separator-content"
         >
           {children}
