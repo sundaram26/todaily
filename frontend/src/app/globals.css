@@ -64,6 +64,8 @@
   --success: #4c8a6a;
   --danger: #c65f5f;
 
+  --error: #E05A4F;
+
   --ring: #b67b4f;
   --radius: 0.80rem;
 }
@@ -89,6 +91,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-info: var(--info);
+
+  --color-error: var(--error);
 
   --color-ring: var(--ring);
 
