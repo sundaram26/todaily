@@ -3,7 +3,7 @@ import { AppError, BadRequestError, NotFoundError, UnauthorizedError } from "@/u
 import { AuthRepository, CreateUserInput } from "./auth.repository";
 import { comparePassword, hashPassword } from "@/services/hash-password.service";
 import { generateOtp } from "@/services/otp.service";
-import { resendOtpEmail, sendOtpEmail } from "@/utils/emails";
+import { sendOtpEmail } from "@/utils/emails";
 import { SmtpType } from "../system-config/system-config.repository";
 import { generateAccessToken, generateRefreshToken, getExpiryDate, JwtToken, verifyJwtRefreshToken } from "./auth.util";
 import { env } from "@/config/env";
@@ -36,11 +36,22 @@ export class AuthService {
     }
 
     async sendOtp(data: SendOtp) {
-        const otpCode = generateOtp();
+        const RATE_LIMIT_MS = 60 * 1000;
 
-        if (!otpCode) {
-            throw new AppError("Failed to generate Otp!")
+        const existingOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.otp_type);
+
+        if (existingOtp) {
+            const now = new Date();
+            const timeSinceLastOtp = existingOtp.updated_at
+                ? now.getTime() - existingOtp.updated_at.getTime()
+                : Infinity;
+
+            if (timeSinceLastOtp < RATE_LIMIT_MS) {
+                throw new BadRequestError("Please wait before requesting another otp!");
+            }
         }
+
+        const otpCode = generateOtp();
 
         const newOtp = await this.repo.addOtp({
             user_id: data.user_id,
@@ -99,33 +110,7 @@ export class AuthService {
     }
 
     async resendOtp(data: SendOtp) {
-        const existingOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.otp_type);
-
-        if (!existingOtp) {
-            return await this.sendOtp(data);
-        }
-
-        const user = await this.repo.findUserById(data.user_id);
-
-        if (!user) {
-          throw new NotFoundError("User not found!");
-        }
-
-        const sendOtpParam = {
-          toEmail: user.email,
-          otp: existingOtp.otp,
-          expiryMinutes: 5,
-          userName: user.username,
-          smtpType: "auth" as SmtpType,
-        };
-
-        const result = await resendOtpEmail(sendOtpParam);
-
-        if (!result) {
-          throw new AppError("Email not sent!");
-        }
-
-        return result;
+        return await this.sendOtp(data);
     }
 
     async login(data: LoginUser) {
@@ -170,6 +155,12 @@ export class AuthService {
         return {
             accessToken,
             refreshToken
+        }
+    }
+
+    async findUser(user_id: string) {
+        if (!user_id) {
+            throw new UnauthorizedError("Unauthorized user!");
         }
     }
 

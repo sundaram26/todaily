@@ -12,6 +12,8 @@ type UserInfo = {
 export type OAuthProvider = {
     getAuthUrl(): string;
 
+    makeState(): string;
+
     getTokens(code: string): Promise<unknown>;
 
     getUserInfo(token: {

@@ -19,6 +19,9 @@ export const redirectToProvider = asyncHandler(async (req: Request, res: Respons
         throw new AppError("Invalid auth provider!");
     }
 
+    const state = provider.makeState();
+    req.session.oauthState = state;
+
     const url = provider.getAuthUrl();
 
     return res.redirect(url);
@@ -27,6 +30,12 @@ export const redirectToProvider = asyncHandler(async (req: Request, res: Respons
 export const handleOAuthCallback = asyncHandler(async (req: Request, res: Response) => {
     const providerName = req.params.provider as providerName;
     const { state, code } = req.query;
+
+    if (!req.session.oauthState || req.session.oauthState !== state) {
+       throw new BadRequestError("Invalid state!");
+    }
+
+    delete req.session.oauthState; 
 
     const provider = providers[providerName];
     if (!provider) {
@@ -37,10 +46,6 @@ export const handleOAuthCallback = asyncHandler(async (req: Request, res: Respon
         throw new BadRequestError("Authorization code missing!");
     }
 
-    if (!state || typeof state !== "string") {
-        throw new BadRequestError("Invalid state!");
-    }
-
     const tokens = await oauthService.login(providerName, code, {
         ip_address: req.ip || "",
         device_info: { userAgent: req.headers["user-agent"] }
@@ -48,14 +53,14 @@ export const handleOAuthCallback = asyncHandler(async (req: Request, res: Respon
 
     res.cookie("access_token", tokens.accessToken, {
         httpOnly: true,
-        secure: true,
+        secure: env.NODE_ENV === "PRODUCTION",
         maxAge: getCookieMaxAge(env.JWT_ACCESS_EXPIRY),
         sameSite: "lax",
     });
 
     res.cookie("refresh_token", tokens.refreshToken, {
         httpOnly: true,
-        secure: true,
+        secure: env.NODE_ENV === "PRODUCTION",
         maxAge: getCookieMaxAge(env.JWT_REFRESH_EXPIRY),
         sameSite: "lax",
     });

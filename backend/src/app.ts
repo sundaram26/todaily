@@ -1,10 +1,28 @@
 import express from 'express';
 import { connectDB } from './db';
 import sysConfigRoute from './modules/system-config/system-config.route';
+import authRoute from './modules/auth/auth.routes';
+import oauthRoute from './modules/oauth/oauth.routes';
+import { env } from './config/env';
+import session from 'express-session';
 
 const app = express();
 
+app.use(session({
+    secret: env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: env.NODE_ENV === "PRODUCTION",
+        httpOnly: true,
+        maxAge: 10 * 60 * 1000,
+        sameSite: "lax"
+    }
+}))
+
 app.use("/api/v1/config", sysConfigRoute);
+app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/oauth", oauthRoute);
 
 app.listen(3000, async () => {
     await connectDB();

@@ -31,10 +31,7 @@ export const UpdateUserSchema = RegisterUserSchema
 
 export const LoginUserSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
-    password: z.string().trim()
-        .min(6)
-        .regex(/[A-Z]/, "Must include uppercase")
-        .regex(/[0-9]/, "Must include number"),
+    password: z.string().trim(),
     ip_address: z.string(),
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),

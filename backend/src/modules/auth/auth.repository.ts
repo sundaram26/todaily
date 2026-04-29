@@ -96,7 +96,7 @@ export class AuthRepository {
         return updatedData;
     }
 
-    async addOtp(data: Otp) {        
+    async addOtp(data: Otp) {  
         const [otp] = await db.insert(otpTable)
             .values(data)
             .onConflictDoUpdate({
@@ -112,15 +112,6 @@ export class AuthRepository {
 
         if (!otp) {
             throw new AppError("OTP creation failed");
-        }
-
-        const now = new Date();
-        const timeSinceLastOtp = otp.updated_at
-            ? now.getTime() - otp.updated_at.getTime()
-            : Infinity;
-        
-        if (timeSinceLastOtp < 60 * 1000) {
-            throw new BadRequestError("Please wait before requesting another otp!")
         }
 
         return otp;

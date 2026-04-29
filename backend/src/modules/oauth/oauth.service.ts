@@ -103,7 +103,7 @@ export class OAuthService {
 
         const user = await this.authRepo.createGoogleAuthUserWithAccount(
             {
-                email: userInfo.email,
+                email: userInfo.email.toLowerCase(),
                 username: await this.generateUniqueUsername(userInfo.email),
                 first_name: userInfo.firstname,
                 last_name: userInfo.lastname,

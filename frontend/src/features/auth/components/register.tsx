@@ -21,11 +21,6 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const login: LoginType = {
-    email,
-    password,
-  };
-
   return (
     <div className="w-full max-w-md border-border">
       <form>
