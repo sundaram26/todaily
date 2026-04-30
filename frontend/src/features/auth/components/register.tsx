@@ -2,28 +2,46 @@
 import {
   Field,
   FieldContent,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { LoginType } from "../types";
-import { useState } from "react";
+import { LoginType, RegisterForm, RegisterType } from "../types";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { images } from "@/assets";
-import { Eye } from "lucide-react";
+import { Eye, LoaderCircle } from "lucide-react";
 import Link from "next/link";
+import { useRegister } from "../hooks/use-register";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { mutate, isPending } = useRegister();
+
+  const {
+    register,
+    handleSubmit,
+    formState: {errors},
+  } = useForm<RegisterType>({
+    resolver: zodResolver(RegisterForm),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+    }
+  })
+
+  const onsubmit = (data: RegisterType) => {
+    mutate(data);
+  }
 
   return (
     <div className="w-full max-w-md border-border">
-      <form>
+      <form onSubmit={handleSubmit(onsubmit)}>
         <FieldGroup>
           <Field className="w-full py-2">
             <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
@@ -31,27 +49,31 @@ function Register() {
             </FieldLabel>
             <Input
               type="text"
-              value={username}
+              {...register("username")}
               placeholder="example"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                setUsername(e.target.value)
-              }
               className="rounded-sm h-12 border-2 border-border bg-input text-sm font-medium"
             />
+            {errors.username && (
+              <FieldError className="text-error font-bold">
+                {errors.username.message || "username error!"}
+              </FieldError>
+            )}
           </Field>
           <Field className="w-full py-2">
             <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
               Email
             </FieldLabel>
             <Input
-              type="text"
-              value={email}
+              {...register("email")}
+              type="email"
               placeholder="name@example.com"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                setEmail(e.target.value)
-              }
               className="rounded-sm h-12 border-2 border-border bg-input text-sm font-medium"
             />
+            {errors.email && (
+              <FieldError className="text-error font-bold">
+                {errors.email.message || "email error!"}
+              </FieldError>
+            )}
           </Field>
           <Field className="w-full py-2">
             <FieldLabel className="font-semibold text-accent-foreground text-sm gap-0 leading-1.5">
@@ -59,32 +81,33 @@ function Register() {
             </FieldLabel>
             <div className="h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
               <Input
-                type="text"
-                value={password}
+                type="password"
+                {...register("password")}
                 placeholder="⁕⁕⁕⁕⁕⁕⁕⁕"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                  setPassword(e.target.value)
-                }
                 className="w-[90%] h-full p-0 focus-visible:ring-0 focus:border-0"
               />
               <Eye className="text-foreground-muted" />
             </div>
+            {errors.password && (
+              <FieldError className="text-error font-bold">
+                {errors.password.message || "passsword error!"}
+              </FieldError>
+            )}
             <FieldContent className="text-sm font-semibold text-primary text-right cursor-pointer">
               Forgot password?
             </FieldContent>
           </Field>
           <Button
             type="submit"
+            disabled={isPending}
             className="h-12 bg-primary rounded-sm text-white font-semibold"
           >
-            Login
+            {isPending ? <LoaderCircle className="animate-spin" /> : "Register"}
           </Button>
           <FieldContent className="w-full text-left cursor-pointer">
             <p className="font-semibold text-accent-foreground text-sm">
-              Haven't already joined?{" "}
-              <Link
-                href="/login"
-              >
+              Already have an account?{" "}
+              <Link href="/login">
                 <span className="text-primary">Login</span>
               </Link>
             </p>
