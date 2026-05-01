@@ -2,12 +2,12 @@ import * as p from "drizzle-orm/pg-core";
 import { userTable } from "./user.table";
 import { timestamps } from "./columns.helpers";
 
-const deviceType = p.pgEnum("device_type", ["android", "ios", "web"]);
+export const deviceType = p.pgEnum("device_type", ["android", "ios", "web"]);
 
 export const userDevice = p.pgTable("user_device", {
   id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
   user_id: p
-    .integer()
+    .uuid()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
   fcm_token: p.text().unique(),
@@ -23,7 +23,7 @@ export const notificationTable = p.pgTable(
   {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
     user_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
     title: p.varchar({ length: 255 }).notNull(),

@@ -18,7 +18,7 @@ export const userTable = p.pgTable(
     userEmailIdx: p.index("user_email_idx").on(t.email),
 }));
 
-const otpType = p.pgEnum("otp_type", ["email_verification", "password_reset"])
+export const otpType = p.pgEnum("otp_type", ["email_verification", "password_reset"])
 
 export const otpTable = p.pgTable(
   "otps",
@@ -35,7 +35,7 @@ export const otpTable = p.pgTable(
   })
 )
 
-const providerType = p.pgEnum("provider_type", ["google", "local"]);
+export const providerType = p.pgEnum("provider_type", ["google", "local"]);
 export const accountTable = p.pgTable(
   "accounts",
   {

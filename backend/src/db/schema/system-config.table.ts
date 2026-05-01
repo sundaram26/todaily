@@ -1,8 +1,8 @@
 import * as p from "drizzle-orm/pg-core";
 import { timestamps } from "./columns.helpers";
 
-const smtpPortEnum = p.pgEnum("smtp_port_enum", ["465", "587", "25", "2525"])
-const smtpTypeEnum = p.pgEnum("smtp_type_enum", ["auth", "general", "marketing", "updates"])
+export const smtpPortEnum = p.pgEnum("smtp_port_enum", ["465", "587", "25", "2525"])
+export const smtpTypeEnum = p.pgEnum("smtp_type_enum", ["auth", "general", "marketing", "updates"])
 
 export const smtpConfigTable = p.pgTable("smtp_configs", {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),

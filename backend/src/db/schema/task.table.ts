@@ -8,21 +8,19 @@ export const taskTable = p.pgTable(
   {
     id: p.uuid().primaryKey(),
     project_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => projectTable.id, { onDelete: "cascade" }),
-    status_id: p.integer().references(() => customFieldTable.id),
-    priority_id: p.integer().references(() => customFieldTable.id),
+    status_id: p.uuid().references(() => customFieldTable.id),
+    priority_id: p.uuid().references(() => customFieldTable.id),
     title: p.varchar({ length: 255 }).notNull(),
     description: p.text(),
     position: p.integer().notNull(),
     created_by: p
-      .integer()
-      .notNull()
+      .uuid()
       .references(() => userTable.id, { onDelete: "set null" }),
     updated_by: p
-      .integer()
-      .notNull()
+      .uuid()
       .references(() => userTable.id, { onDelete: "set null" }),
     start_date: p.timestamp(),
     due_date: p.timestamp(),
@@ -41,13 +39,12 @@ export const taskAttachmentTable = p.pgTable(
   {
     id: p.uuid().primaryKey().defaultRandom(),
     task_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => taskTable.id, { onDelete: "cascade" }),
     file_url: p.text().notNull(),
     uploaded_by: p
-      .integer()
-      .notNull()
+      .uuid()
       .references(() => userTable.id, { onDelete: "set null" }),
     ...timestamps,
   },
@@ -61,11 +58,11 @@ export const taskCommentTable = p.pgTable(
   {
     id: p.uuid().primaryKey().defaultRandom(),
     task_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => taskTable.id, { onDelete: "cascade" }),
     user_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
     comment: p.text().notNull(),

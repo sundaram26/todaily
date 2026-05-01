@@ -7,19 +7,18 @@ export const projectTable = p.pgTable("projects", {
   title: p.varchar({ length: 255 }).notNull(),
   description: p.text(),
   created_by: p
-    .integer()
-    .notNull()
+    .uuid()
     .references(() => userTable.id, { onDelete: "set null" }),
   is_deleted: p.boolean().default(false),
   ...timestamps,
 });
 
-const typeEnum = p.pgEnum("custom_field_type", ["status", "priority", "label"]);
+export const typeEnum = p.pgEnum("custom_field_type", ["status", "priority", "label"]);
 
 export const customFieldTable = p.pgTable("custom_fields", {
   id: p.uuid().primaryKey().defaultRandom(),
   project_id: p
-    .integer()
+    .uuid()
     .notNull()
     .references(() => projectTable.id, { onDelete: "cascade" }),
   title: p.varchar({ length: 255 }).notNull(),
