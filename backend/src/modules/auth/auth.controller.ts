@@ -21,6 +21,38 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
+export const sendOrResendVerifyLink = asyncHandler(async (req: Request, res: Response) => {
+  const sendEmail = await authService.sendVerifyLink(req.body);
+
+  if (!sendEmail) {
+    throw new AppError("Unable to send email!");
+  }
+
+  return res.json(
+    new ApiResponse({
+      status: 200,
+      message: "Successfully sent verification link."
+    })
+  )
+})
+
+export const verifyToken = asyncHandler(async (req: Request, res: Response) => {
+  const { token } = req.query;
+  
+  if (!token || typeof token !== "string") {
+    throw new BadRequestError("Invalid or missing token!")
+  }
+  
+  await authService.verifyToken(token);
+
+  return res.json(
+    new ApiResponse({
+      status: 200,
+      message: "Successfully verified user."
+    })
+  )
+})
+
 export const sendOtp = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.sendOtp(req.body);
 
@@ -51,20 +83,20 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
-export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
-  const isVerified = await authService.verifyOtp(req.body);
+// export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+//   const isVerified = await authService.verifyOtp(req.body);
 
-  if (!isVerified) {
-    throw new BadRequestError("Invalid or expired otp!");
-  }
+//   if (!isVerified) {
+//     throw new BadRequestError("Invalid or expired otp!");
+//   }
 
-  return res.json(
-    new ApiResponse({
-      status: 200,
-      message: "Successfully verified email.",
-    }),
-  );
-});
+//   return res.json(
+//     new ApiResponse({
+//       status: 200,
+//       message: "Successfully verified email.",
+//     }),
+//   );
+// });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const loggedin = await authService.login(req.body);

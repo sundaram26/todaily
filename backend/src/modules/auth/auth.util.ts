@@ -1,6 +1,7 @@
 import { env } from "@/config/env";
 import { AppError } from "@/utils/app-error";
 import * as jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 export type JwtToken = {
     user_id: string,
@@ -76,4 +77,14 @@ export const getCookieMaxAge = (timestring: string): number => {
     const multiplier = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
 
     return value * multiplier[unit as keyof typeof multiplier];
+}
+
+export const getVerificationToken = () => {
+    const token = crypto.randomBytes(32).toString('hex');
+    const now = new Date();
+    const token_expiry = new Date(now.getTime() + 5 * 60 * 1000);
+    return {
+        token,
+        token_expiry
+    };
 }

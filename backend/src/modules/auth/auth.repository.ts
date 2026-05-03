@@ -1,7 +1,7 @@
 import { db } from "@/db"
-import { accountTable, otpTable, sessionTable, userTable } from "@/db/schema"
+import { accountTable, otpTable, sessionTable, userTable, verifyToken } from "@/db/schema"
 import { and, eq, lt, or } from "drizzle-orm"
-import { Account, GoogleAuth, Otp, OtpType, ProviderType, RegisterUser, UpdateUser, UpdateUserSession, UserSession, VerifyOtp } from "./auth.schema"
+import { Account, GoogleAuth, Otp, OtpType, ProviderType, RegisterUser, UpdateUser, UpdateUserSession, UserSession, VerifyToken } from "./auth.schema"
 import { AppError, BadRequestError } from "@/utils/app-error"
 import z from "zod"
 
@@ -94,6 +94,19 @@ export class AuthRepository {
         }
 
         return updatedData;
+    }
+
+    async addToken(data: VerifyToken) {
+        const [token] = await db.insert(verifyToken).values(data).returning();
+        if (!token) {
+            throw new AppError("token not stored!");
+        }
+
+        return token;
+    }
+    
+    async findToken(token: string) {
+        return await db.query.verifyToken.findFirst({where: eq(verifyToken.verification_token, token)})
     }
 
     async addOtp(data: Otp) {  

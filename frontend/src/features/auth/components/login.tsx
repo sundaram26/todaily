@@ -7,20 +7,26 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { images } from "@/assets";
-import { Eye } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const login: LoginType = {
-    email,
-    password,
-  };
+    const handlePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+    };
+
+    const passwordMouseEnter = () => {
+      handlePasswordVisibility();
+    };
+
+    const passwordMouseLeave = () => {
+      handlePasswordVisibility();
+    };
 
   return (
-    <div className="w-full max-w-md border-border">
+    <div className="w-full border-border">
       <form>
         <FieldGroup>
           <Field className="w-full py-2">
@@ -28,13 +34,9 @@ function Login() {
               Email
             </FieldLabel>
             <Input
-              type="text"
-              value={email}
+              type="email"
               placeholder="name@example.com"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                setEmail(e.target.value)
-              }
-              className="rounded-sm h-12 border-2 border-border bg-input text-sm font-medium"
+              className="rounded-sm h-10 md:h-12 border-2 border-border bg-input text-sm font-medium"
             />
             {/* <FieldError className="text-error font-bold">
               
@@ -44,17 +46,22 @@ function Login() {
             <FieldLabel className="font-semibold text-accent-foreground text-sm gap-0 leading-1.5">
               Password
             </FieldLabel>
-            <div className="h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
+            <div className="h-10 md:h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
               <Input
-                type="text"
-                value={password}
+                type={showPassword ? "text" : "password"}
                 placeholder="⁕⁕⁕⁕⁕⁕⁕⁕"
-                onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-                  setPassword(e.target.value)
-                }
-                className="w-[90%] h-full p-0 focus-visible:ring-0 focus:border-0"
+                className="flex-1 h-full p-0 focus-visible:ring-0 focus:border-0"
               />
-              <Eye className="text-foreground-muted" />
+              <span
+                onMouseEnter={passwordMouseEnter}
+                onMouseLeave={passwordMouseLeave}
+              >
+                {showPassword ? (
+                  <EyeOff className="text-foreground-muted" />
+                ) : (
+                  <Eye className="text-foreground-muted" />
+                )}
+              </span>
             </div>
             <FieldContent className="text-sm font-semibold text-primary text-right cursor-pointer">
               Forgot password?
@@ -62,16 +69,14 @@ function Login() {
           </Field>
           <Button
             type="submit"
-            className="h-12 bg-primary rounded-sm text-white font-semibold"
+            className="h-10 md:h-12 bg-primary rounded-sm text-white font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/80 hover:scale-[1.02] disabled:bg-primary/80 transition-transform"
           >
             Login
           </Button>
           <FieldContent className="w-full text-left cursor-pointer">
             <p className="font-semibold text-accent-foreground text-sm">
               Haven't already joined?{" "}
-              <Link
-                href="/register"
-              >
+              <Link href="/register">
                 <span className="text-primary">Register</span>
               </Link>
             </p>
@@ -79,7 +84,7 @@ function Login() {
         </FieldGroup>
         <FieldSeparator className="my-8">or</FieldSeparator>
         <FieldGroup>
-          <div className="h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer">
+          <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
             <Image
               src={images.googleIcon}
               alt="google-icon"
@@ -89,7 +94,7 @@ function Login() {
               Login with Google
             </p>
           </div>
-          <div className="h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer">
+          <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
             <Image
               src={images.githubIcon}
               alt="github-icon"

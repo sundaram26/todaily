@@ -1,15 +1,19 @@
 import { Router } from "express";
-import { login, logout, refreshTokens, register, resendOtp, sendOtp, verifyOtp } from "./auth.controller";
+import { login, logout, refreshTokens, register, resendOtp, sendOrResendVerifyLink, sendOtp, verifyToken } from "./auth.controller";
+import { validateSchema } from "@/middlewares/validate-schema.middleware";
+import { LoginUserSchema, LogoutUserSchema, OtpSchema, RegisterUserSchema, SendVerifyLinkSchema } from "./auth.schema";
 
 
 const authRoute:Router = Router();
 
-authRoute.post("/register", register);
-authRoute.post("/send-otp", sendOtp);
-authRoute.post("/resend-otp", resendOtp);
-authRoute.post("/verify-otp", verifyOtp);
-authRoute.post("/login", login);
+authRoute.post("/register", validateSchema(RegisterUserSchema), register);
+authRoute.post("/send-verify", validateSchema(SendVerifyLinkSchema), sendOrResendVerifyLink);
+authRoute.get("/verify-email", verifyToken)
+// authRoute.post("/send-otp", validateSchema(OtpSchema), sendOtp);
+// authRoute.post("/resend-otp", validateSchema(OtpSchema), resendOtp);
+// authRoute.post("/verify-otp", verifyOtp);
+authRoute.post("/login", validateSchema(LoginUserSchema), login);
 authRoute.post("/refresh-token", refreshTokens);
-authRoute.post("/logout", logout);
+authRoute.post("/logout", validateSchema(LogoutUserSchema), logout);
 
 export default authRoute;

@@ -1,17 +1,37 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { register } from "../api/auth.api"
 import { RegisterType } from "../types"
 import { toast } from "sonner"
 
 
-export const useRegister = () => {
+type UseRegisterOptions = {
+    onSuccess?: () => void;
+}
+
+export const useRegister = (options?: UseRegisterOptions) => {
     return useMutation({
         mutationFn: (data: RegisterType) => register(data),
-        onSuccess: (response) => {
-            toast.success(response.message, {position: "top-center"})
+        onSuccess: (res) => {
+            toast.success(res.message, {position: "top-center"})
+            options?.onSuccess?.()
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Registration failed!", { position: "top-center" })
+            const message = error.response?.data?.message;
+
+            // Try to parse JSON error array
+            if (message) {
+                try {
+                    const errors = JSON.parse(message);
+                    if (Array.isArray(errors)) {
+                        errors.forEach((err) => {
+                            toast.error(`${err.field}: ${err.message}`, { position: "top-center" });
+                        });
+                        return;
+                    }
+                } catch {
+                    toast.error(message || "Registration failed!", { position: "top-center" })
+                }
+            }
         }
     })
 }

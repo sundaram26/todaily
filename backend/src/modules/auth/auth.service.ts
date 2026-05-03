@@ -1,11 +1,11 @@
-import { LoginUser, RegisterUser, SendOtp, VerifyOtp } from "./auth.schema";
+import { LoginUser, RegisterUser, SendOtp, SendVerifyLink, VerifyOtp, VerifyToken } from "./auth.schema";
 import { AppError, BadRequestError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { AuthRepository, CreateUserInput } from "./auth.repository";
 import { comparePassword, hashPassword } from "@/services/hash-password.service";
 import { generateOtp } from "@/services/otp.service";
-import { sendOtpEmail } from "@/utils/emails";
+import { sendEmailVerificationEmail, sendOtpEmail } from "@/utils/emails";
 import { SmtpType } from "../system-config/system-config.repository";
-import { generateAccessToken, generateRefreshToken, getExpiryDate, JwtToken, verifyJwtRefreshToken } from "./auth.util";
+import { generateAccessToken, generateRefreshToken, getExpiryDate, getVerificationToken, JwtToken, verifyJwtRefreshToken } from "./auth.util";
 import { env } from "@/config/env";
 import crypto from "crypto"
 
@@ -28,11 +28,86 @@ export class AuthService {
 
         const user = await this.repo.createUser(newData);
 
+        const newToken = getVerificationToken();
+        const tokenData = {
+          user_id: user.id,
+          verification_token: newToken.token,
+          token_expiry: newToken.token_expiry,
+        };
+
+        const token = await this.repo.addToken(tokenData);
+
+        // const verifyUrl = `${env.FRONTEND_URL}/auth/verify?token=${token}`
+
+        const result = await sendEmailVerificationEmail({
+          toEmail: user.email,
+          smtpType: "auth",
+          verificationToken: token.verification_token,
+          expiryMinutes: 5,
+          userName: user.username,
+        });
+
+        if (!result) {
+          throw new AppError("Unable to send the verification email!");
+        }
+
         return {
             id: user.id,
             email: user.email,
             username: user.username
         };
+    }
+
+    async sendVerifyLink(data: SendVerifyLink) {
+        const user = await this.repo.findUserByEmail(data.email);
+        if (!user) {
+            throw new NotFoundError("user not found!");
+        }
+
+        if (user.is_verified) {
+          throw new BadRequestError("User already verified!");
+        }
+
+        const newToken = getVerificationToken();
+        const tokenData = {
+            user_id: user.id,
+            verification_token: newToken.token,
+            token_expiry: newToken.token_expiry,
+        };
+
+        const token = await this.repo.addToken(tokenData);
+
+        // const verifyUrl = `${env.FRONTEND_URL}/auth/verify?token=${token}`
+
+        const result = await sendEmailVerificationEmail({
+            toEmail: user.email,
+            smtpType: "auth",
+            verificationToken: token.verification_token,
+            expiryMinutes: 5,
+            userName: user.username,
+        });
+
+        if (!result) {
+            throw new AppError("Unable to send the verification email!");
+        }
+
+        return result;
+    }
+
+    async verifyToken(token: string) {
+        if (!token) {
+            throw new BadRequestError("Unable to identify url!");
+        }
+
+        const existingToken = await this.repo.findToken(token);
+        if (!existingToken || existingToken.token_expiry < new Date()) {
+            throw new BadRequestError("Invalid or expired url!");
+        }
+
+        const is_verified = true;
+        const updateUser = await this.repo.updateUser(existingToken.user_id, { is_verified })
+
+        return updateUser ? is_verified : false;
     }
 
     async sendOtp(data: SendOtp) {
@@ -83,31 +158,31 @@ export class AuthService {
         return result;
     }
 
-    async verifyOtp(data: VerifyOtp) {
-        const userOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.type);
+    // async verifyOtp(data: VerifyOtp) {
+    //     const userOtp = await this.repo.findOtpByUserIdAndType(data.user_id, data.type);
 
-        if (!userOtp) {
-          throw new AppError("User otp not found!");
-        }
+    //     if (!userOtp) {
+    //       throw new AppError("User otp not found!");
+    //     }
 
-        const now = new Date();
-        if (userOtp.otp_expiry < now) {
-            await this.repo.deleteOtpById(userOtp.id);
-            throw new AppError("OTP expired!");
-        }
+    //     const now = new Date();
+    //     if (userOtp.otp_expiry < now) {
+    //         await this.repo.deleteOtpById(userOtp.id);
+    //         throw new AppError("OTP expired!");
+    //     }
 
-        if (crypto.timingSafeEqual(Buffer.from(userOtp.otp), Buffer.from(data.otp))) {
-            await this.repo.deleteOtpById(userOtp.id);
-            
-            if (data.type === "email_verification") {
-                await this.repo.updateUser(data.user_id, { is_verified: true });
-            }
-            
-            return true;
-        }
+    //     if (crypto.timingSafeEqual(Buffer.from(userOtp.otp), Buffer.from(data.otp))) {
+    //         await this.repo.deleteOtpById(userOtp.id);
 
-        return false;
-    }
+    //         if (data.type === "email_verification") {
+    //             await this.repo.updateUser(data.user_id, { is_verified: true });
+    //         }
+
+    //         return true;
+    //     }
+
+    //     return false;
+    // }
 
     async resendOtp(data: SendOtp) {
         return await this.sendOtp(data);
@@ -129,15 +204,15 @@ export class AuthService {
         if (!matchPassword) {
             throw new UnauthorizedError("Invalid credentials!");
         }
-        
+
         const payload: JwtToken = {
             user_id: existingUser.id,
             username: existingUser.username,
             email: existingUser.email
         }
 
-        const accessToken = generateAccessToken(payload);        
-        const refreshToken = generateRefreshToken(payload);   
+        const accessToken = generateAccessToken(payload);
+        const refreshToken = generateRefreshToken(payload);
 
         const userSession = await this.repo.createUserSession({
             user_id: existingUser.id,
@@ -151,7 +226,7 @@ export class AuthService {
         if (!userSession) {
             throw new AppError("Unable to create user session!")
         }
- 
+
         return {
             accessToken,
             refreshToken
@@ -162,6 +237,10 @@ export class AuthService {
         if (!user_id) {
             throw new UnauthorizedError("Unauthorized user!");
         }
+
+        const user = await this.repo.findUserById(user_id);
+
+        return user;
     }
 
     async refreshToken(token: string) {
@@ -188,7 +267,7 @@ export class AuthService {
         const accessToken = generateAccessToken(payload);
         const refreshToken = generateRefreshToken(payload);
 
-        const userSession = await this.repo.updateUserSession(token,{
+        const userSession = await this.repo.updateUserSession(token, {
             refresh_token: refreshToken,
             expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
             absolute_expiry: storedToken.absolute_expiry
@@ -204,7 +283,7 @@ export class AuthService {
         }
     }
 
-    async logout(token: string) { 
+    async logout(token: string) {
         const loggedOut = await this.repo.deleteSessionByRefreshToken(token);
 
         if (!loggedOut) {

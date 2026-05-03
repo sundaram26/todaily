@@ -241,6 +241,51 @@ export const generateSuccessAlert = (message: string): string => {
   `;
 };
 
+export interface VerificationLinkParams {
+  verificationUrl: string;
+  buttonLabel?: string;
+  expiryTime?: string;
+  helpText?: string;
+}
+
+export const generateVerificationLinkCard = (params: VerificationLinkParams): string => {
+  const { verificationUrl, buttonLabel = 'Verify Email', expiryTime, helpText } = params;
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+      <tr>
+        <td style="background-color: #eff6ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 32px 24px; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 500; color: #1e40af;">
+            Click the button below to verify your email address
+          </p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 20px auto 0;">
+            <tr>
+              <td style="background-color: #2563eb; border-radius: 8px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
+                <a href="${escapeHtml(verificationUrl)}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                  ${escapeHtml(buttonLabel)}
+                </a>
+              </td>
+            </tr>
+          </table>
+          ${expiryTime ? `
+            <p style="margin: 20px 0 0 0; font-size: 13px; color: #64748b;">
+              This link will expire in <strong>${escapeHtml(expiryTime)}</strong>
+            </p>
+          ` : ''}
+        </td>
+      </tr>
+    </table>
+    <p style="margin: 16px 0 0 0; font-size: 14px; line-height: 1.5; color: #6b7280;">
+      ${helpText || 'If you\'re having trouble clicking the button, copy and paste the link below into your browser:'}
+    </p>
+    <p style="margin: 8px 0 0 0; font-size: 13px; color: #2563eb; word-break: break-all;">
+      <a href="${escapeHtml(verificationUrl)}" target="_blank" style="color: #2563eb; text-decoration: underline;">
+        ${escapeHtml(verificationUrl)}
+      </a>
+    </p>
+  `;
+};
+
 export const generatePlainText = (params: {
   subject: string;
   heading: string;

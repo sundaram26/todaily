@@ -8,6 +8,13 @@
       "when": 1777659050559,
       "tag": "0000_loose_spot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777805567082,
+      "tag": "0001_rapid_justice",
+      "breakpoints": true
     }
   ]
 }

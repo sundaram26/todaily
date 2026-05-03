@@ -211,7 +211,7 @@ export const sendEmailVerificationEmail = async (params: EmailVerificationParams
   const { toEmail, verificationToken, expiryMinutes, userName, smtpType = "auth" } = params;
 
   const greeting = userName ? `Hi ${userName},` : "Hello,";
-  const verifyUrl = `${BASE_URL}/auth/verify-email?token=${verificationToken}`;
+  const verifyUrl = `${BASE_URL}/verify-email?token=${verificationToken}`;
   const expiryTime = expiryMinutes === 1 ? "1 minute" : `${expiryMinutes} minutes`;
 
   const content = `

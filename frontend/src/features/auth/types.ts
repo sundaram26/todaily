@@ -6,6 +6,10 @@ export const RegisterForm = z.object({
   password: z.string().min(8, "Password should contain 8 or more characters")
 })
 
+export const SendVerifyLinkForm = z.object({
+  email: z.string().trim().email()
+})
+
 export const OtpTypeEnum = z.enum(["email_verification", "password_reset"]);
 
 const SendOtp = z.object({
@@ -32,6 +36,8 @@ const LoginFrom = z.object({
 
 
 export type RegisterType = z.infer<typeof RegisterForm>;
+export type SendVerifyLinkType = z.infer<typeof SendVerifyLinkForm>;
 export type SendOtpType = z.infer<typeof SendOtp>;
 export type VerifyOtpType = z.infer<typeof VerifyOtp>;
 export type LoginType = z.infer<typeof LoginFrom>;
+export type VerifyStatus = "loading" | "success" | "error";

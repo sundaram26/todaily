@@ -69,7 +69,17 @@ export const LogoutUserSchema = z.object({
     fcm_token: z.string().optional()
 })
 
-export const OtpTypeEnum = z.enum(["email_verification", "password_reset"])
+export const VerifyTokenSchema = z.object({
+    user_id: z.string().uuid(),
+    verification_token: z.string(),
+    token_expiry: z.date()
+})
+
+export const SendVerifyLinkSchema = z.object({
+  email: z.string().trim().email(),
+});
+
+export const OtpTypeEnum = z.enum([ "password_reset"])
 
 export const OtpSchema = z.object({
     user_id: z.string().uuid(),
@@ -123,6 +133,8 @@ export type Account = z.infer<typeof AccountSchema>
 export type UserSession = z.infer<typeof UserSessionSchema>
 export type UpdateUserSession = z.infer<typeof UpdateUserSessionSchema>
 export type LogoutUser = z.infer<typeof LogoutUserSchema>
+export type VerifyToken = z.infer<typeof VerifyTokenSchema>
+export type SendVerifyLink = z.infer<typeof SendVerifyLinkSchema>;
 export type Otp = z.infer<typeof OtpSchema>
 export type OtpType = z.infer<typeof OtpTypeEnum>
 export type SendOtp = z.infer<typeof SendOtpSchema>

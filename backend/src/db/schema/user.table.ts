@@ -7,10 +7,10 @@ export const userTable = p.pgTable(
     id: p.uuid().primaryKey().defaultRandom(),
     first_name: p.varchar({ length: 255 }),
     last_name: p.varchar({ length: 255 }),
+    username: p.varchar({ length: 20 }).notNull().unique(),
     profile: p.varchar({ length: 255 }),
     email: p.varchar({ length: 255 }).notNull().unique(),
     password: p.text(),
-    username: p.varchar({ length: 20 }).notNull().unique(),
     is_verified: p.boolean().default(false),
     is_active: p.boolean().default(true),
     ...timestamps,
@@ -18,7 +18,17 @@ export const userTable = p.pgTable(
     userEmailIdx: p.index("user_email_idx").on(t.email),
 }));
 
-export const otpType = p.pgEnum("otp_type", ["email_verification", "password_reset"])
+export const verifyToken = p.pgTable("verification_tokens", {
+  id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+  user_id: p
+    .uuid()
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  verification_token: p.varchar({ length: 255 }).notNull(),
+  token_expiry: p.timestamp({ withTimezone: true }).notNull(),
+});
+
+export const otpType = p.pgEnum("otp_type", ["password_reset"])
 
 export const otpTable = p.pgTable(
   "otps",

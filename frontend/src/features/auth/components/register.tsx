@@ -8,19 +8,27 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
-import { LoginType, RegisterForm, RegisterType } from "../types";
+import { RegisterForm, RegisterType } from "../types";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { images } from "@/assets";
-import { Eye, LoaderCircle } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRegister } from "../hooks/use-register";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 function Register() {
-  const { mutate, isPending } = useRegister();
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { mutate, isPending } = useRegister({
+    onSuccess: () => {
+      setTimeout(() => router.push("/login"), 1000);
+    }
+  });
 
   const {
     register,
@@ -39,8 +47,23 @@ function Register() {
     mutate(data);
   }
 
+  const passwordMouseEnter = () => {
+    setShowPassword(true);
+    timeoutRef.current = setTimeout(() => {
+      setShowPassword(false);
+    }, 3000);
+  }
+
+  const passwordMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setShowPassword(false);
+  }
+
   return (
-    <div className="w-full max-w-md border-border">
+    <div className="w-full border-border">
       <form onSubmit={handleSubmit(onsubmit)}>
         <FieldGroup>
           <Field className="w-full py-2">
@@ -50,8 +73,8 @@ function Register() {
             <Input
               type="text"
               {...register("username")}
-              placeholder="example"
-              className="rounded-sm h-12 border-2 border-border bg-input text-sm font-medium"
+              placeholder="@example123"
+              className="rounded-sm h-10 md:h-12 border-2 border-border bg-input text-sm font-medium"
             />
             {errors.username && (
               <FieldError className="text-error font-bold">
@@ -67,7 +90,7 @@ function Register() {
               {...register("email")}
               type="email"
               placeholder="name@example.com"
-              className="rounded-sm h-12 border-2 border-border bg-input text-sm font-medium"
+              className="rounded-sm h-10 md:h-12 border-2 border-border bg-input text-sm font-medium"
             />
             {errors.email && (
               <FieldError className="text-error font-bold">
@@ -79,14 +102,23 @@ function Register() {
             <FieldLabel className="font-semibold text-accent-foreground text-sm gap-0 leading-1.5">
               Password
             </FieldLabel>
-            <div className="h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
+            <div className="h-10 md:h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
               <Input
-                type="password"
+                type={`${showPassword ? "text" : "password"}`}
                 {...register("password")}
                 placeholder="⁕⁕⁕⁕⁕⁕⁕⁕"
-                className="w-[90%] h-full p-0 focus-visible:ring-0 focus:border-0"
+                className="flex-1 h-full p-0 focus-visible:ring-0 focus:border-0"
               />
-              <Eye className="text-foreground-muted" />
+              <span
+                onMouseEnter={passwordMouseEnter}
+                onMouseLeave={passwordMouseLeave}
+              >
+                {showPassword ? (
+                  <EyeOff className="text-foreground-muted" />
+                ) : (
+                  <Eye className="text-foreground-muted" />
+                )}
+              </span>
             </div>
             {errors.password && (
               <FieldError className="text-error font-bold">
@@ -100,9 +132,9 @@ function Register() {
           <Button
             type="submit"
             disabled={isPending}
-            className="h-12 bg-primary rounded-sm text-white font-semibold"
+            className="h-10 md:h-12 bg-primary rounded-sm text-white font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/80 hover:scale-[1.02] disabled:bg-primary/80 transition-transform"
           >
-            {isPending ? <LoaderCircle className="animate-spin" /> : "Register"}
+            {isPending ? <><LoaderCircle className="animate-spin" /> <p>Registering...</p></> : "Register"}
           </Button>
           <FieldContent className="w-full text-left cursor-pointer">
             <p className="font-semibold text-accent-foreground text-sm">
@@ -115,7 +147,7 @@ function Register() {
         </FieldGroup>
         <FieldSeparator className="my-8">or</FieldSeparator>
         <FieldGroup>
-          <div className="h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer">
+          <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
             <Image
               src={images.googleIcon}
               alt="google-icon"
@@ -125,7 +157,7 @@ function Register() {
               Login with Google
             </p>
           </div>
-          <div className="h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer">
+          <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
             <Image
               src={images.githubIcon}
               alt="github-icon"

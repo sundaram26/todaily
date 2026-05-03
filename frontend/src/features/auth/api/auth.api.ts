@@ -1,24 +1,35 @@
 import api from "@/lib/axios";
-import { LoginType, RegisterType, SendOtpType, VerifyOtpType } from "../types";
+import { LoginType, RegisterType, SendVerifyLinkType } from "../types";
 
 
 export const register = async (register: RegisterType) => {
     const res = await api.post("/auth/register", register)
+    return res.data;
+}
+
+export const sendVerifyLink = async (data: SendVerifyLinkType) => {
+    const res = await api.post("/auth/send-verify", data);
+
+    return res.data
+}
+
+export const verifyLink = async (token: string) => {
+    const res = await api.get(`auth/verify-email?token=${token}`);
 
     return res.data;
 }
 
-export const sendOtp = async (sendOtp: SendOtpType) => {
-    const res = await api.post("/auth/send-otp", sendOtp);
+// export const sendOtp = async (sendOtp: SendOtpType) => {
+//     const res = await api.post("/auth/send-otp", sendOtp);
 
-    return res.data;
-}
+//     return res.data;
+// }
 
-export const verifyOtp = async (verifyOtp: VerifyOtpType) => {
-    const res = await api.post("/auth/verify-otp", verifyOtp);
+// export const verifyOtp = async (verifyOtp: VerifyOtpType) => {
+//     const res = await api.post("/auth/verify-otp", verifyOtp);
 
-    return res.data;
-}
+//     return res.data;
+// }
 
 export const login = async (login: LoginType) => {
     const res = await api.post("/auth/login", login, {

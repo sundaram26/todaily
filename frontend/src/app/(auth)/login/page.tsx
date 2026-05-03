@@ -1,7 +1,7 @@
 import Login from "@/features/auth/components/login";
 
 
-const login = () => {
+const LoginPage = () => {
     return (
       <div className="h-full w-full max-w-md flex flex-col justify-center items-center">
         <div className="w-full flex flex-col justify-start mb-8">
@@ -17,4 +17,4 @@ const login = () => {
     );
 }
 
-export default login;
+export default LoginPage;

@@ -1,7 +1,7 @@
 import Register from "@/features/auth/components/register";
 
 
-const register = () => {
+const RegisterPage = () => {
     return (
       <div className="h-full w-full max-w-md flex flex-col justify-center items-center">
         <div className="w-full flex flex-col justify-start mb-8">
@@ -17,4 +17,4 @@ const register = () => {
     );
 }
 
-export default register;
+export default RegisterPage;
