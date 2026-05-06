@@ -6,6 +6,7 @@ import { toast } from "sonner"
 
 type UseRegisterOptions = {
     onSuccess?: () => void;
+    onError?: () => void;
 }
 
 export const useRegister = (options?: UseRegisterOptions) => {

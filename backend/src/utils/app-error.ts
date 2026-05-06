@@ -22,6 +22,8 @@ export class AppError extends Error {
             details = null,
         } = options;
 
+        console.error(`[${code}] ${message}`, details);
+
         this.name = this.constructor.name;
         this.status = status;
         this.code = code;

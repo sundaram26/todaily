@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { RegisterType } from "../types"
+import { logout } from "../api/auth.api"
 
 type User = {
     id: string,

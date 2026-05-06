@@ -30,9 +30,9 @@ export class AuthService {
 
         const newToken = getVerificationToken();
         const tokenData = {
-          user_id: user.id,
-          verification_token: newToken.token,
-          token_expiry: newToken.token_expiry,
+            user_id: user.id,
+            verification_token: newToken.token,
+            token_expiry: newToken.token_expiry,
         };
 
         const token = await this.repo.addToken(tokenData);
@@ -40,15 +40,15 @@ export class AuthService {
         // const verifyUrl = `${env.FRONTEND_URL}/auth/verify?token=${token}`
 
         const result = await sendEmailVerificationEmail({
-          toEmail: user.email,
-          smtpType: "auth",
-          verificationToken: token.verification_token,
-          expiryMinutes: 5,
-          userName: user.username,
+            toEmail: user.email,
+            smtpType: "auth",
+            verificationToken: token.verification_token,
+            expiryMinutes: 5,
+            userName: user.username,
         });
 
         if (!result) {
-          throw new AppError("Unable to send the verification email!");
+            throw new AppError("Unable to send the verification email!");
         }
 
         return {
@@ -65,7 +65,7 @@ export class AuthService {
         }
 
         if (user.is_verified) {
-          throw new BadRequestError("User already verified!");
+            throw new BadRequestError("User already verified!");
         }
 
         const newToken = getVerificationToken();
@@ -205,6 +205,29 @@ export class AuthService {
             throw new UnauthorizedError("Invalid credentials!");
         }
 
+        if (!existingUser.is_verified) {
+            const newToken = getVerificationToken();
+            const tokenData = {
+                user_id: existingUser.id,
+                verification_token: newToken.token,
+                token_expiry: newToken.token_expiry,
+            };
+
+            await this.repo.addToken(tokenData);
+
+            await sendEmailVerificationEmail({
+                toEmail: existingUser.email,
+                smtpType: "auth",
+                verificationToken: tokenData.verification_token,
+                expiryMinutes: 5,
+                userName: existingUser.username,
+            });
+
+            throw new UnauthorizedError(
+                "Please verify your email. Verification link sent!",
+            );
+        }
+
         const payload: JwtToken = {
             user_id: existingUser.id,
             username: existingUser.username,
@@ -217,8 +240,8 @@ export class AuthService {
         const userSession = await this.repo.createUserSession({
             user_id: existingUser.id,
             refresh_token: refreshToken,
-            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
-            ip_address: data.ip_address,
+            expires_at: getExpiryDate(env.JWT_REFRESH_EXPIRY),
+            ip_address: data.ip_address || "",
             absolute_expiry: getExpiryDate(env.SESSION_EXPIRY),
             device_info: data.device_info
         })

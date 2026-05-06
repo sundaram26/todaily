@@ -5,13 +5,9 @@ import {
     FieldError,
     FieldGroup,
     FieldLabel,
-    FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { images } from "@/assets";
 import Link from "next/link";
 import { useSendVerify } from "../hooks/use-send-verify";
 import { useForm } from "react-hook-form";

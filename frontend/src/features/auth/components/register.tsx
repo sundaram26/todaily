@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useGoogleOAuth } from "../hooks/use-google-oauth";
 
 function Register() {
   const router = useRouter();
@@ -29,6 +30,7 @@ function Register() {
       setTimeout(() => router.push("/login"), 1000);
     }
   });
+  const { login: googleLogin } = useGoogleOAuth();
 
   const {
     register,
@@ -112,6 +114,7 @@ function Register() {
               <span
                 onMouseEnter={passwordMouseEnter}
                 onMouseLeave={passwordMouseLeave}
+                className="pr-2"
               >
                 {showPassword ? (
                   <EyeOff className="text-foreground-muted" />
@@ -134,7 +137,13 @@ function Register() {
             disabled={isPending}
             className="h-10 md:h-12 bg-primary rounded-sm text-white font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/80 hover:scale-[1.02] disabled:bg-primary/80 transition-transform"
           >
-            {isPending ? <><LoaderCircle className="animate-spin" /> <p>Registering...</p></> : "Register"}
+            {isPending ? (
+              <>
+                <LoaderCircle className="animate-spin" /> <p>Registering...</p>
+              </>
+            ) : (
+              "Register"
+            )}
           </Button>
           <FieldContent className="w-full text-left cursor-pointer">
             <p className="font-semibold text-accent-foreground text-sm">
@@ -147,7 +156,12 @@ function Register() {
         </FieldGroup>
         <FieldSeparator className="my-8">or</FieldSeparator>
         <FieldGroup>
-          <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => googleLogin()}
+            className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform"
+          >
             <Image
               src={images.googleIcon}
               alt="google-icon"
@@ -156,7 +170,7 @@ function Register() {
             <p className="text-sm font-semibold text-muted-foreground">
               Login with Google
             </p>
-          </div>
+          </Button>
           <div className="h-10 md:h-12 bg-surface rounded-sm flex items-center justify-center gap-2 p-2 border-2 border-primary cursor-pointer hover:bg-primary/60 hover:scale-[1.02] transition-transform">
             <Image
               src={images.githubIcon}

@@ -2,32 +2,63 @@
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { LoginType } from "../types";
-import { useState } from "react";
+import { LoginForm, LoginType } from "../types";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { images } from "@/assets";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle } from "lucide-react";
 import Link from "next/link";
+import { useLogin } from "../hooks/use-login";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function Login() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { mutate, isPending } = useLogin({
+    onSuccess: () => {
+      setTimeout(() => router.push("/home"), 1000)
+    }
+  });
 
-    const handlePasswordVisibility = () => {
-      setShowPassword(!showPassword);
-    };
+  const passwordMouseEnter = () => {
+    setShowPassword(true);
+    timeoutRef.current = setTimeout(() => {
+      setShowPassword(false);
+    }, 3000);
+  };
 
-    const passwordMouseEnter = () => {
-      handlePasswordVisibility();
-    };
+  const passwordMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setShowPassword(false);
+  };
 
-    const passwordMouseLeave = () => {
-      handlePasswordVisibility();
-    };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<LoginType>({
+    resolver: zodResolver(LoginForm),
+    defaultValues: {
+      email: "",
+      password: "",
+      provider: "local",
+    }
+  })
+
+  const onsubmit = (data: LoginType) => {
+    mutate(data);
+  }
 
   return (
     <div className="w-full border-border">
-      <form>
+      <form onSubmit={handleSubmit(onsubmit)}>
         <FieldGroup>
           <Field className="w-full py-2">
             <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
@@ -35,26 +66,31 @@ function Login() {
             </FieldLabel>
             <Input
               type="email"
+              {...register("email")}
               placeholder="name@example.com"
               className="rounded-sm h-10 md:h-12 border-2 border-border bg-input text-sm font-medium"
             />
-            {/* <FieldError className="text-error font-bold">
-              
-            </FieldError> */}
+            {errors.email && (
+              <FieldError className="text-error font-bold">
+                {errors.email?.message || "invalid email!"}
+              </FieldError>
+            )}
           </Field>
           <Field className="w-full py-2">
             <FieldLabel className="font-semibold text-accent-foreground text-sm gap-0 leading-1.5">
               Password
             </FieldLabel>
-            <div className="h-10 md:h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm px-2 focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
+            <div className="h-10 md:h-12 w-full flex justify-between items-center border-2 border-border bg-input rounded-sm focus-within:ring-3 focus-within:ring-ring/50 focus-within:border-px focus-within:border-ring">
               <Input
                 type={showPassword ? "text" : "password"}
+                {...register("password")}
                 placeholder="⁕⁕⁕⁕⁕⁕⁕⁕"
-                className="flex-1 h-full p-0 focus-visible:ring-0 focus:border-0"
+                className="flex-1 h-full py-0 px-2 focus-visible:ring-0 focus:border-0"
               />
               <span
                 onMouseEnter={passwordMouseEnter}
                 onMouseLeave={passwordMouseLeave}
+                className="pr-2"
               >
                 {showPassword ? (
                   <EyeOff className="text-foreground-muted" />
@@ -63,6 +99,11 @@ function Login() {
                 )}
               </span>
             </div>
+            {errors.password && (
+              <FieldError className="text-error font-bold">
+                {errors.password?.message || "Invalid password!"}
+              </FieldError>
+            )}
             <FieldContent className="text-sm font-semibold text-primary text-right cursor-pointer">
               Forgot password?
             </FieldContent>
@@ -71,7 +112,7 @@ function Login() {
             type="submit"
             className="h-10 md:h-12 bg-primary rounded-sm text-white font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/80 hover:scale-[1.02] disabled:bg-primary/80 transition-transform"
           >
-            Login
+            {isPending ? <><LoaderCircle className="animate-spin"/> Login...</> : "Login"}
           </Button>
           <FieldContent className="w-full text-left cursor-pointer">
             <p className="font-semibold text-accent-foreground text-sm">

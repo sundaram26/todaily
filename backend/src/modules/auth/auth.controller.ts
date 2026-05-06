@@ -6,6 +6,7 @@ import { ApiResponse } from "@/utils/api-response";
 import { AppError, BadRequestError, NotFoundError } from "@/utils/app-error";
 import { env } from "@/config/env";
 import { getCookieMaxAge, getExpiryDate } from "./auth.util";
+import { UAParser } from "ua-parser-js";
 
 const authService = new AuthService(new AuthRepository());
 
@@ -99,7 +100,14 @@ export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
 // });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const loggedin = await authService.login(req.body);
+  const loginData = {
+    ...req.body,
+    provider: "local",
+    ip_address: req.ip || req.headers['x-forwarded-for'] as string || "",
+    device_info: new UAParser(req.headers['user-agent'] || "").getResult()
+  }
+
+  const loggedin = await authService.login(loginData);
 
   if (!loggedin) {
     throw new AppError("Unable to login!");
@@ -133,7 +141,7 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
     throw new BadRequestError("User id is required!");
   }
   
-  const user = authService.findUser(user_id);
+  const user = await authService.findUser(user_id);
 
   if (!user) {
     throw new NotFoundError("User not found!");

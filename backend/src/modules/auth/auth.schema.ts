@@ -32,10 +32,10 @@ export const UpdateUserSchema = RegisterUserSchema
 export const LoginUserSchema = z.object({
     email: z.string().trim().email().transform(val => val.toLowerCase()),
     password: z.string().trim(),
-    ip_address: z.string(),
+    ip_address: z.string().optional(),
     fcm_token: z.string().optional(),
     device_info: z.object({}).passthrough().optional(),
-    provider: z.enum(["local"])
+    provider: z.enum(["local"]).optional()
 });
 
 export const providerTypes = z.enum(["google", "local"]);

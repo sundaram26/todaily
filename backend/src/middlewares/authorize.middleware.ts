@@ -10,17 +10,13 @@ export const isAuthenticated = (
     next: NextFunction
 ) => {
     try {
-        const authHeader = req.headers.authorization;
+        const authHeader = req.cookies?.access_token;
 
         if (!authHeader) {
             throw new UnauthorizedError("Authorization token is required!")
         }
 
-        const token = authHeader.split(" ")[1];
-
-        if (!token) {
-            throw new AppError("Invalid token!");
-        }
+        const token = authHeader;
 
         const decode = verifyJwtToken(token);
 

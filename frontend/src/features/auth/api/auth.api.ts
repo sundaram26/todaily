@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import api, { API_URL } from "@/lib/axios";
 import { LoginType, RegisterType, SendVerifyLinkType } from "../types";
 
 
@@ -41,6 +41,26 @@ export const login = async (login: LoginType) => {
 
 export const me = async () => {
     const res = await api.get("/auth/me", {
+        withCredentials: true
+    })
+
+    return res.data;
+}
+
+export const logout = async () => {
+    const res = await api.post("auth/logout", {}, {
+        withCredentials: true
+    })
+
+    return res.data;
+}
+
+export const googleOAuth = () => {
+    window.location.href = `${API_URL}/oauth/redirect/google`;
+}
+
+export const googleOAuthCallback = async (code: string, state: string) => {
+    const res = await api.post("/oauth/callback/google", { code, state }, {
         withCredentials: true
     })
 

@@ -25,13 +25,10 @@ const VerifyOtp = z.object({
 
 export const providerTypes = z.enum(["google", "local"]);
 
-const LoginFrom = z.object({
+export const LoginForm = z.object({
   email: z.string().email(),
   password: z.string().min(8, "password should contain atleast 8 characters!"),
-  ip_address: z.string().optional(),
   provider: providerTypes.optional(),
-  fcm_tokens: z.string().optional(),
-  device_info: z.string().optional()
 });
 
 
@@ -39,5 +36,5 @@ export type RegisterType = z.infer<typeof RegisterForm>;
 export type SendVerifyLinkType = z.infer<typeof SendVerifyLinkForm>;
 export type SendOtpType = z.infer<typeof SendOtp>;
 export type VerifyOtpType = z.infer<typeof VerifyOtp>;
-export type LoginType = z.infer<typeof LoginFrom>;
+export type LoginType = z.infer<typeof LoginForm>;
 export type VerifyStatus = "loading" | "success" | "error";

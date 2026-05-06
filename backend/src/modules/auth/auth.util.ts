@@ -1,6 +1,6 @@
 import { env } from "@/config/env";
 import { AppError } from "@/utils/app-error";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
 export type JwtToken = {

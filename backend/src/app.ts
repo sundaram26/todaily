@@ -31,16 +31,22 @@ app.use("/api/v1/config", sysConfigRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/oauth", oauthRoute);
 
-// Global error handler ---> for schema validator
+// Global error handler for unexpected errors only
 app.use((err: any, _req: any, res: any, _next: any) => {
-    const status = err.status || 500;
-    const message = err.message || "Internal Server Error";
+    console.error("Error:", err);
 
-    res.status(status).json({
+    if (err.status) {
+        return res.status(err.status).json({
+            success: false,
+            message: err.message,
+            code: err.code || "ERROR",
+        });
+    }
+
+    res.status(500).json({
         success: false,
-        message,
-        code: err.code || "INTERNAL_ERROR",
-        details: err.details || null
+        message: "Internal Server Error",
+        code: "INTERNAL_ERROR",
     });
 });
 
