@@ -22,6 +22,8 @@ export class AppError extends Error {
             details = null,
         } = options;
 
+        console.error(`[${code}] ${message}`, details);
+
         this.name = this.constructor.name;
         this.status = status;
         this.code = code;
@@ -80,3 +82,17 @@ export class NotFoundError extends AppError {
         })        
     }
 }
+
+export class MissingDataError extends AppError{
+    constructor(
+        message = "Missing Required Fields",
+        details?: unknown
+    ) {
+        super(message, {
+            status: 406,
+            code: "UNACCEPTABLE",
+            details
+        })
+    }
+}
+

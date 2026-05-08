@@ -4,17 +4,57 @@ import { timestamps } from "./columns.helpers"
 export const userTable = p.pgTable(
   "users",
   {
-    id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
-    first_name: p.varchar({ length: 255 }).notNull(),
-    last_name: p.varchar({ length: 255 }).notNull(),
+    id: p.uuid().primaryKey().defaultRandom(),
+    first_name: p.varchar({ length: 255 }),
+    last_name: p.varchar({ length: 255 }),
+    username: p.varchar({ length: 20 }).notNull().unique(),
+    profile: p.varchar({ length: 255 }),
     email: p.varchar({ length: 255 }).notNull().unique(),
-    password: p.text().notNull(),
-    username: p.varchar({ length: 20 }).unique(),
-    otp: p.varchar({ length: 6 }),
-    otp_expiry: p.timestamp({ withTimezone: true }),
+    password: p.text(),
     is_verified: p.boolean().default(false),
-    is_active: p.boolean().default(false),
+    is_active: p.boolean().default(true),
     ...timestamps,
 }, (t) => ({
     userEmailIdx: p.index("user_email_idx").on(t.email),
 }));
+
+export const verifyToken = p.pgTable("verification_tokens", {
+  id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+  user_id: p
+    .uuid()
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  verification_token: p.varchar({ length: 255 }).notNull(),
+  token_expiry: p.timestamp({ withTimezone: true }).notNull(),
+});
+
+export const otpType = p.pgEnum("otp_type", ["password_reset"])
+
+export const otpTable = p.pgTable(
+  "otps",
+  {
+    id: p.uuid().primaryKey().defaultRandom(),
+    user_id: p.uuid().notNull().references(() =>  userTable.id, { onDelete: "cascade"}),
+    otp: p.varchar({ length: 6 }).notNull(),
+    type: otpType().notNull(),
+    otp_expiry: p.timestamp({ withTimezone: true }).notNull(),
+    ...timestamps
+  }, (t) => ({
+    otpUserIdIdx: p.index("otp_user_id_idx").on(t.user_id),
+    otpExpiryIdx: p.index("otp_expiry_idx").on(t.otp_expiry)
+  })
+)
+
+export const providerType = p.pgEnum("provider_type", ["google", "local"]);
+export const accountTable = p.pgTable(
+  "accounts",
+  {
+    id: p.uuid().primaryKey().defaultRandom(),
+    user_id: p.uuid().notNull().references(() => userTable.id, { onDelete: "cascade" }),
+    provider: providerType(),
+    provider_account_id: p.text().notNull(),
+    ...timestamps
+  }, (t) => ({
+    accountProviderIdx: p.unique("account_provider_unique").on(t.provider, t.provider_account_id),
+  })
+)

@@ -8,7 +8,7 @@ type ApiResponseOptions = {
 export class ApiResponse {
     status: number;
     message: string;
-    data: any;
+    data?: unknown;
 
     constructor({ status, message, data = null }: ApiResponseOptions) {
         this.status = status;

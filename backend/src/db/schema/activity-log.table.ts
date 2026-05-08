@@ -9,14 +9,14 @@ export const activityLogTable = p.pgTable(
   {
     id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
     user_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => userTable.id),
     project_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => projectTable.id),
-    task_id: p.integer().references(() => taskTable.id),
+    task_id: p.uuid().references(() => taskTable.id),
     action: p.varchar({ length: 255 }).notNull(),
     metadata: p.json(),
     ...timestamps,

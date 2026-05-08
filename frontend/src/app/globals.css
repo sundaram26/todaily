@@ -1,0 +1,116 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/*
+  ---break---
+*/
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Theme Overview
+  ─────────────────────────────────────────
+  Inspired by Claude.ai's warm-neutral palette.
+  Light: warm ivory surfaces, soft lavender-violet accents — stunning and calm.
+  Dark:  deep warm-charcoal, muted violet — focused, never harsh.
+
+  Semantic tokens:
+    --background        page canvas
+    --surface           card / panel layer
+    --surface-raised    elevated card (hover, modal)
+    --overlay           sidebar, nav, popover bg
+
+    --primary           brand action (buttons, links, rings)
+    --primary-hover     slightly deeper primary
+    --primary-subtle    tinted fills (badges, highlights)
+
+    --secondary         secondary action surface
+    --muted             quiet fills (code blocks, tags)
+    --accent            collaboration / presence tint (voice, video, chat indicators)
+
+    --foreground        primary text
+    --foreground-muted  secondary text, labels
+    --foreground-faint  placeholder, disabled text
+
+    --border            default dividers
+    --border-strong     emphasis borders, focus rings
+
+    --success           done, online, confirmed
+    --warning           in-progress, pending
+    --danger            delete, error, offline
+    --info              links, info badges
+
+    --sidebar-bg        left nav background
+    --sidebar-fg        sidebar text
+    --sidebar-active    active nav item fill
+*/
+
+/* ─── Light ─────────────────────────────────── */
+:root {
+  --background: #e3e0d7;
+  --surface: #f7f5f0;
+  --card: #ffffff;
+
+  --foreground: #374145;
+  --foreground-muted: #6b7280;
+
+  --primary: #b67b4f;
+  --primary-hover: #9f6842;
+  --primary-subtle: #f3e7dd;
+  --primary-foreground: #ffffff;
+
+  --border: #d6d3cd;
+  --input: #eae7e1;
+
+  --success: #4c8a6a;
+  --danger: #c65f5f;
+
+  --error: #E05A4F;
+
+  --ring: #b67b4f;
+  --radius: 0.80rem;
+}
+
+/* ─── Tailwind v4 theme mapping ──────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --color-error: var(--error);
+
+  --color-ring: var(--ring);
+
+  --font-heading: var(--font-quicksand);
+  --font-sans: var(--font-quicksand);
+  --radius-6xl: calc(var(--radius) * 2.6);
+}
+/*
+  ---break---
+*/
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

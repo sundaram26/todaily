@@ -3,23 +3,22 @@ import { userTable } from "./user.table";
 import { timestamps } from "./columns.helpers";
 
 export const projectTable = p.pgTable("projects", {
-  id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+  id: p.uuid().primaryKey(),
   title: p.varchar({ length: 255 }).notNull(),
   description: p.text(),
   created_by: p
-    .integer()
-    .notNull()
+    .uuid()
     .references(() => userTable.id, { onDelete: "set null" }),
   is_deleted: p.boolean().default(false),
   ...timestamps,
 });
 
-const typeEnum = p.pgEnum("custom_field_type", ["status", "priority", "label"]);
+export const typeEnum = p.pgEnum("custom_field_type", ["status", "priority", "label"]);
 
 export const customFieldTable = p.pgTable("custom_fields", {
-  id: p.integer().primaryKey().generatedAlwaysAsIdentity(),
+  id: p.uuid().primaryKey().defaultRandom(),
   project_id: p
-    .integer()
+    .uuid()
     .notNull()
     .references(() => projectTable.id, { onDelete: "cascade" }),
   title: p.varchar({ length: 255 }).notNull(),
@@ -33,11 +32,11 @@ export const projectMembers = p.pgTable(
   "project_members",
   {
     user_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => userTable.id, { onDelete: "cascade" }),
     project_id: p
-      .integer()
+      .uuid()
       .notNull()
       .references(() => projectTable.id, { onDelete: "cascade" }),
     role: p.varchar({ length: 50 }).default("member"),
