@@ -61,7 +61,7 @@ export class OAuthService {
 
         const userInfo = await provider.getUserInfo(token);
 
-        const account = await this.authRepo.findAccount(
+        const account = await this.authRepo.findAccountByProviderAccountId(
             userInfo.provider,
             userInfo.id,
         );
@@ -85,7 +85,7 @@ export class OAuthService {
             const userSession = await this.authRepo.createUserSession({
                 user_id: existingUser.id,
                 refresh_token: refreshToken,
-                expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
+                expires_at: getExpiryDate(env.JWT_REFRESH_EXPIRY),
                 ip_address: data.ip_address,
                 absolute_expiry: getExpiryDate(env.SESSION_EXPIRY),
                 device_info: data.device_info,
@@ -128,7 +128,7 @@ export class OAuthService {
         const userSession = await this.authRepo.createUserSession({
             user_id: user.id,
             refresh_token: refreshToken,
-            expires_at: getExpiryDate(env.JWT_REFRESH_SECRET),
+            expires_at: getExpiryDate(env.JWT_REFRESH_EXPIRY),
             ip_address: data.ip_address,
             absolute_expiry: getExpiryDate(env.SESSION_EXPIRY),
             device_info: data.device_info,

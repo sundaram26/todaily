@@ -5,6 +5,7 @@ import authRoute from './modules/auth/auth.routes';
 import oauthRoute from './modules/oauth/oauth.routes';
 import cors from 'cors';
 import { env } from './config/env';
+import cookieParser from 'cookie-parser';
 import session from 'express-session';
 
 const app = express();
@@ -14,7 +15,7 @@ app.use(cors({
     credentials: true
 }))
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(session({
     secret: env.SESSION_SECRET || "secret",
     resave: false,

@@ -27,12 +27,12 @@ export const googleProvider: OAuthProvider = {
         return `${encoded}.${sig}`;
     },
 
-    getAuthUrl() {
+    getAuthUrl(state: string) {
         const googleRedirectUrl = googleClient.generateAuthUrl({
             scope: ["openid", "email", "profile"],
             prompt: "select_account",
             include_granted_scopes: true,
-            state: this.makeState(),
+            state: state,
         });
 
         return googleRedirectUrl;

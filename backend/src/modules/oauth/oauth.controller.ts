@@ -22,7 +22,7 @@ export const redirectToProvider = asyncHandler(async (req: Request, res: Respons
     const state = provider.makeState();
     req.session.oauthState = state;
 
-    const url = provider.getAuthUrl();
+    const url = provider.getAuthUrl(state);
 
     return res.redirect(url);
 })
@@ -30,7 +30,7 @@ export const redirectToProvider = asyncHandler(async (req: Request, res: Respons
 export const handleOAuthCallback = asyncHandler(async (req: Request, res: Response) => {
     const providerName = req.params.provider as providerName;
     const { state, code } = req.query;
-
+    console.log("Received OAuth callback with state:", state, "and code:", code);
     if (!req.session.oauthState || req.session.oauthState !== state) {
        throw new BadRequestError("Invalid state!");
     }
@@ -50,6 +50,7 @@ export const handleOAuthCallback = asyncHandler(async (req: Request, res: Respon
         ip_address: req.ip || "",
         device_info: { userAgent: req.headers["user-agent"] }
     })
+    console.log("access tokens:", tokens);
 
     res.cookie("access_token", tokens.accessToken, {
         httpOnly: true,

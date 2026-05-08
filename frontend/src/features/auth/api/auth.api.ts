@@ -60,7 +60,7 @@ export const googleOAuth = () => {
 }
 
 export const googleOAuthCallback = async (code: string, state: string) => {
-    const res = await api.post("/oauth/callback/google", { code, state }, {
+    const res = await api.post(`/oauth/callback/google?state=${state}&code=${code}`, {  }, {
         withCredentials: true
     })
 

@@ -10,7 +10,7 @@ type UserInfo = {
 
 
 export type OAuthProvider = {
-    getAuthUrl(): string;
+    getAuthUrl(state:string): string;
 
     makeState(): string;
 

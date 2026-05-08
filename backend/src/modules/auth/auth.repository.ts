@@ -83,6 +83,15 @@ export class AuthRepository {
         })
     }
 
+    async findAccountByProviderAccountId(provider: ProviderType, provider_account_id: string) {
+        return db.query.accountTable.findFirst({
+            where: and(
+                eq(accountTable.provider, provider),
+                eq(accountTable.provider_account_id, provider_account_id)
+            )
+        })
+    }
+
     async updateUser(id: string, data: UpdateUser) {
         const cleanData = Object.fromEntries(
             Object.entries(data).filter(([_, v]) => v !== undefined)

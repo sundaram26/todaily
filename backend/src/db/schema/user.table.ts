@@ -54,5 +54,7 @@ export const accountTable = p.pgTable(
     provider: providerType(),
     provider_account_id: p.text().notNull(),
     ...timestamps
-  }
+  }, (t) => ({
+    accountProviderIdx: p.unique("account_provider_unique").on(t.provider, t.provider_account_id),
+  })
 )
