@@ -12,7 +12,7 @@ export const useMe = (enabled: boolean = true) => {
                 return res.data;
             },
             enabled,
-            retry: false,
+            retry: 1,
             refetchOnWindowFocus: false,
         })
     )

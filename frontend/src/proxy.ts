@@ -1,22 +1,41 @@
-import { NextResponse } from "next/server"; 
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
+const PUBLIC_AUTH_ROUTES = [
+  "/login",
+  "/register",
+  "/verify-email",
+  "/send-verify",
+];
+
+const PROTECTED_ROUTES = ["/home", "/dashboard", "/settings", "/profile"];
 
 export function proxy(req: NextRequest) {
-    const token = req.cookies.get("access_token");
-    const { pathname } = new URL(req.url);
+  const token = req.cookies.get("access_token")?.value;
 
-    if (token && (pathname === "/login" || pathname === "/register")) {
-        return NextResponse.redirect(new URL("/home", req.url))
-    }
+  const { pathname } = req.nextUrl;
 
-    if (!token && pathname.startsWith("/home")) {
-        return NextResponse.redirect(new URL("/login", req.url));
-    }
+  // Redirect authenticated users away from auth pages
+  if (
+    token &&
+    PUBLIC_AUTH_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(route + "/"),
+    )
+  ) {
+    return NextResponse.redirect(new URL("/home", req.url));
+  }
 
-    return NextResponse.next();
+  // Protect private routes
+  const isProtectedRoute = PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  if (!token && isProtectedRoute) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-    matcher: ["/login", "/register", "/home/:path*"]
-}
+  matcher: ["/((?!api|_next|favicon.ico).*)"],
+};
