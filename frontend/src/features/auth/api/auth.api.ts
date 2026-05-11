@@ -43,7 +43,7 @@ export const me = async () => {
     const res = await api.get("/auth/me", {
         withCredentials: true
     })
-
+    console.log("response of me: ", res)
     return res.data;
 }
 

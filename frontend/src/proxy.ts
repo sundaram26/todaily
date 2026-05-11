@@ -7,7 +7,7 @@ const PUBLIC_AUTH_ROUTES = [
   "/send-verify",
 ];
 
-const PROTECTED_ROUTES = ["/home", "/dashboard", "/settings", "/profile"];
+const PROTECTED_ROUTES = ["/my-day", "/calendar", "/projects", "/timeline", "/collaborations"];
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("access_token")?.value;
@@ -21,7 +21,7 @@ export function proxy(req: NextRequest) {
       (route) => pathname === route || pathname.startsWith(route + "/"),
     )
   ) {
-    return NextResponse.redirect(new URL("/home", req.url));
+    return NextResponse.redirect(new URL("/my-day", req.url));
   }
 
   // Protect private routes
