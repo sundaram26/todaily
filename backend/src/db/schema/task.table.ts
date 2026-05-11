@@ -6,7 +6,7 @@ import { userTable } from "./user.table";
 export const taskTable = p.pgTable(
   "tasks",
   {
-    id: p.uuid().primaryKey(),
+    id: p.uuid().primaryKey().defaultRandom(),
     project_id: p
       .uuid()
       .notNull()
@@ -15,7 +15,7 @@ export const taskTable = p.pgTable(
     priority_id: p.uuid().references(() => customFieldTable.id),
     title: p.varchar({ length: 255 }).notNull(),
     description: p.text(),
-    position: p.integer().notNull(),
+    position: p.integer().default(0).notNull(),
     created_by: p
       .uuid()
       .references(() => userTable.id, { onDelete: "set null" }),

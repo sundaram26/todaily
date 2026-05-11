@@ -51,7 +51,7 @@ export const accountTable = p.pgTable(
   {
     id: p.uuid().primaryKey().defaultRandom(),
     user_id: p.uuid().notNull().references(() => userTable.id, { onDelete: "cascade" }),
-    provider: providerType(),
+    provider: providerType().notNull(),
     provider_account_id: p.text().notNull(),
     ...timestamps
   }, (t) => ({

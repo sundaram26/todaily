@@ -20,7 +20,7 @@ function Login() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { mutate, isPending } = useLogin({
     onSuccess: () => {
-      setTimeout(() => router.push("/home"), 1000)
+      setTimeout(() => router.push("/my-day"), 1000)
     }
   });
 

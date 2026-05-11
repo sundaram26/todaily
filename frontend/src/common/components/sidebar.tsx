@@ -6,7 +6,7 @@ import {
   FolderDot,
   CalendarDays,
   ChartGantt,
-  Webhook,
+  HeartHandshake,
   LogOut,
   Route,
 } from "lucide-react";
@@ -41,7 +41,7 @@ const SidebarContent = [
   },
   {
     id: 5,
-    icon: Webhook,
+    icon: HeartHandshake,
     slug: "collaborations",
     content: "Collaborations",
   },

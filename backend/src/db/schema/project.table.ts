@@ -1,9 +1,11 @@
 import * as p from "drizzle-orm/pg-core";
 import { userTable } from "./user.table";
 import { timestamps } from "./columns.helpers";
+import { workspaceTable } from "./workspace.table";
 
 export const projectTable = p.pgTable("projects", {
-  id: p.uuid().primaryKey(),
+  id: p.uuid().primaryKey().defaultRandom(),
+  workspace_id: p.uuid().references(() => workspaceTable.id, { onDelete: "set null" }),
   title: p.varchar({ length: 255 }).notNull(),
   description: p.text(),
   created_by: p
@@ -11,7 +13,9 @@ export const projectTable = p.pgTable("projects", {
     .references(() => userTable.id, { onDelete: "set null" }),
   is_deleted: p.boolean().default(false),
   ...timestamps,
-});
+}, (t) => ({
+  projectWorkspaceIdx: p.index("project_workspace_idx").on(t.workspace_id),
+}));
 
 export const typeEnum = p.pgEnum("custom_field_type", ["status", "priority", "label"]);
 
@@ -24,9 +28,11 @@ export const customFieldTable = p.pgTable("custom_fields", {
   title: p.varchar({ length: 255 }).notNull(),
   color: p.varchar({ length: 255 }).notNull(),
   type: typeEnum().notNull(),
-  position: p.integer(),
+  position: p.integer().default(0).notNull(),
   ...timestamps,
 });
+
+export const projectRoleEnum = p.pgEnum("project_role", ["owner", "admin", "member"])
 
 export const projectMembers = p.pgTable(
   "project_members",
@@ -39,7 +45,7 @@ export const projectMembers = p.pgTable(
       .uuid()
       .notNull()
       .references(() => projectTable.id, { onDelete: "cascade" }),
-    role: p.varchar({ length: 50 }).default("member"),
+    role: projectRoleEnum().default("member").notNull(),
     ...timestamps,
   },
   (t) => [

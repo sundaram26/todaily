@@ -23,7 +23,7 @@ export default function GoogleCallbackPage() {
       try {
         await googleOAuthCallback(code, state || "");
         toast.success("Successfully logged in with Google!");
-        router.push("/home");
+        router.push("/my-day");
       } catch (error: any) {
         toast.error(error.response?.data?.message || "Login failed");
         router.push("/login");
