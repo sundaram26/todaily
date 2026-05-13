@@ -1,6 +1,7 @@
 import * as p from "drizzle-orm/pg-core";
 import { userTable } from "./user.table";
 import { timestamps } from "./columns.helpers";
+import { relations } from "drizzle-orm";
 
 export const workspaceTable = p.pgTable(
     "workspaces",

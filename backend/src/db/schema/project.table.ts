@@ -34,7 +34,7 @@ export const customFieldTable = p.pgTable("custom_fields", {
 
 export const projectRoleEnum = p.pgEnum("project_role", ["owner", "admin", "member"])
 
-export const projectMembers = p.pgTable(
+export const projectMemberTable = p.pgTable(
   "project_members",
   {
     user_id: p

@@ -12,11 +12,11 @@ export const WorkspaceDbSchema = WorkspaceSchema.extend({
 
 export const UpdateWorkspaceSchema = WorkspaceSchema.partial();
 
-export const WorkspaceRoleEnum = z.enum(["owner", "admin", "member"]);
+export const WorkspaceMemberRoleEnum = z.enum(["owner", "admin", "member"]);
 
 export const WorkspaceMemberSchema = z.object({
     workspace_id: z.uuid(),
-    role: WorkspaceRoleEnum.default("member"),
+    role: WorkspaceMemberRoleEnum.default("member")
 });
 
 export const WorkspaceMemberDbSchema = WorkspaceMemberSchema.extend({
@@ -33,7 +33,9 @@ export const ProjectDbSchema = ProjectSchema.extend({
     created_by: z.uuid()
 })
 
-export const UpdateProjectSchema = ProjectSchema.partial();
+export const UpdateProjectSchema = ProjectSchema.partial().extend({
+    id: z.string()
+});
 
 export const ProjectRoleEnum = z.enum(["owner", "admin", "member"]);
 
@@ -106,6 +108,8 @@ export const TaskAssignSchema = z.object({
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 export type WorkspaceDb = z.infer<typeof WorkspaceDbSchema>;
 export type WorkspaceMember = z.infer<typeof WorkspaceMemberSchema>;
+export type WorkspaceMemberRole = z.infer<typeof WorkspaceMemberRoleEnum>;
+export type WorkspaceMemberDb = z.infer<typeof WorkspaceMemberDbSchema>;
 export type UpdateWorkspace = z.infer<typeof UpdateWorkspaceSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type ProjectDb = z.infer<typeof ProjectDbSchema>;
