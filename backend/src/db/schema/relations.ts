@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { workspaceMemberTable, workspaceTable } from "./workspace.table";
 import { userTable } from "./user.table";
 import { customFieldTable, projectMemberTable, projectTable } from "./project.table";
+import { taskAttachmentTable, taskCommentTable, taskTable } from "./task.table";
 
 export const workspaceMemberRelations = relations(
   workspaceMemberTable,
@@ -36,35 +37,54 @@ export const projectMemberRelations = relations(projectMemberTable, ({ one }) =>
         fields: [projectMemberTable.user_id],
         references: [userTable.id]
     })
-}))
+}));
 
 export const projectToUserRelations = relations(projectTable, ({ many }) => ({
     members: many(projectMemberTable),
-}))
+}));
 
 export const userToProjectRelations = relations(userTable, ({ many }) => ({
     projectMemberships: many(projectMemberTable),
-}))
+}));
 
 export const customFieldToProjectRelations = relations(customFieldTable, ({ one }) => ({
     project: one(projectTable, {
         fields: [customFieldTable.project_id],
         references: [projectTable.id]
     }),
-}))
+}));
 
 
 export const projectToCustomFieldRelations = relations(projectTable, ({ many }) => ({
     customFields: many(customFieldTable),
-}))
+}));
 
 export const projectToWorkspaceRelations = relations(projectTable, ({ one }) => ({
     workspace: one(workspaceTable, {
         fields: [projectTable.workspace_id],
         references: [workspaceTable.id]
     })
-}))
+}));
 
 export const workspaceToProjectRelations = relations(workspaceTable, ({ many }) => ({
     projects: many(projectTable)
-}))
+}));
+
+export const projectToTaskRelations = relations(projectTable, ({ many }) => ({
+    tasks: many(taskTable)
+}));
+
+export const taskToProjectRelations = relations(taskTable, ({ one }) => ({
+    project: one(projectTable, {
+        fields: [taskTable.project_id],
+        references: [projectTable.id]
+    })
+}));
+
+export const taskToAttachments = relations(taskTable, ({ many }) => ({
+    attachments: many(taskAttachmentTable)
+}));
+
+export const taskToComments = relations(taskTable, ({ many }) => ({
+    comments: many(taskCommentTable)
+}));

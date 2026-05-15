@@ -126,7 +126,10 @@ export class WorkspaceRepository {
 
     async addProject(data: ProjectDb) {
         return db.transaction(async (tx) => {
-            const [project] = await tx.insert(projectTable).values(data).returning();
+            const [project] = await tx.insert(projectTable).values(data).returning({
+                id: projectTable.id,
+                title: projectTable.title
+            });
             if (!project) {
                 throw new AppError("Failed to create project");
             }
@@ -146,7 +149,10 @@ export class WorkspaceRepository {
             .update(projectTable)
             .set(projectData)
             .where(eq(projectTable.id, data.id))
-            .returning();
+            .returning({
+                id: projectTable.id,
+                title: projectTable.title
+            });
 
         return project;
     }
@@ -165,16 +171,32 @@ export class WorkspaceRepository {
                 eq(projectTable.id, project_id),
                 eq(projectTable.is_deleted, false),
             ),
+            columns: {
+                id: true,
+                title: true,
+                description: true,
+                created_by: true,
+                workspace_id: true,
+                created_at: true,
+            }
         });
     }
 
     async findProjectWithoutWorkspaceByUserId(user_id: string) {
         return db.query.projectTable.findMany({
-            where: and(
-                eq(projectTable.created_by, user_id),
-                eq(projectTable.is_deleted, false),
-                isNull(projectTable.workspace_id)
-            ),
+          where: and(
+            eq(projectTable.created_by, user_id),
+            eq(projectTable.is_deleted, false),
+            isNull(projectTable.workspace_id),
+          ),
+          columns: {
+            id: true,
+            title: true,
+            description: true,
+            created_by: true,
+            workspace_id: true,
+            created_at: true,
+          },
         });
     }
 
@@ -205,8 +227,8 @@ export class WorkspaceRepository {
         return task;
     }
 
-    async updateTask(data: UpdateTask) {
-        const [task] = await db.update(taskTable).set(data).returning();
+    async updateTask(task_id: string, data: UpdateTask) {
+        const [task] = await db.update(taskTable).set(data).where(eq(taskTable.id, task_id)).returning();
 
         return task;
     }
@@ -215,11 +237,23 @@ export class WorkspaceRepository {
         return await db.update(taskTable).set({ is_deleted: true }).where(eq(taskTable.id, task_id)).returning();
     }
 
-    // async findTaskByProjectId(project_id: string) {
-    //     return await db.query.projectTable.findMany({
-    //         with: {
-    //             task: 
-    //         }
-    //     })
-    // }
+    async findTaskByProjectId(project_id: string) {
+        return await db.query.taskTable.findMany({
+            where: and(
+                eq(taskTable.project_id, project_id),
+                eq(taskTable.is_deleted, false)
+            )
+        })
+    }
+
+    async findTaskById(task_id: string) {
+        return await db.query.taskTable.findFirst({
+            where: and(
+                eq(taskTable.id, task_id),
+                eq(taskTable.is_deleted, false)
+            )
+        })
+    }
+
+    
 }
