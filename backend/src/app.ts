@@ -7,6 +7,7 @@ import cors from 'cors';
 import { env } from './config/env';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import workspaceRoute from './modules/workspace/workspace.routes';
 
 const app = express();
 
@@ -31,6 +32,8 @@ app.use(session({
 app.use("/api/v1/config", sysConfigRoute);
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/oauth", oauthRoute);
+
+app.use("/api/v1/workspace", workspaceRoute);
 
 // Global error handler for unexpected errors only
 app.use((err: any, _req: any, res: any, _next: any) => {

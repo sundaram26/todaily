@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { workspaceMemberTable, workspaceTable } from "./workspace.table";
 import { userTable } from "./user.table";
 import { customFieldTable, projectMemberTable, projectTable } from "./project.table";
-import { taskAttachmentTable, taskCommentTable, taskTable } from "./task.table";
+import { taskAttachmentTable, taskCommentTable, taskLabelTable, taskTable } from "./task.table";
 
 export const workspaceMemberRelations = relations(
   workspaceMemberTable,
@@ -57,6 +57,22 @@ export const customFieldToProjectRelations = relations(customFieldTable, ({ one 
 
 export const projectToCustomFieldRelations = relations(projectTable, ({ many }) => ({
     customFields: many(customFieldTable),
+}));
+
+export const taskLabelRelations = relations(taskLabelTable, ({ one }) => ({
+  field: one(customFieldTable, {
+    fields: [taskLabelTable.field_id],
+    references: [customFieldTable.id],
+  }),
+
+  task: one(taskTable, {
+    fields: [taskLabelTable.task_id],
+    references: [taskTable.id],
+  }),
+}));
+
+export const taskToLabelRelations = relations(taskTable, ({ many }) => ({
+  labels: many(taskLabelTable),
 }));
 
 export const projectToWorkspaceRelations = relations(projectTable, ({ one }) => ({

@@ -72,3 +72,4 @@ export const getProjectWithoutWorkspace = asyncHandler(async (req: Request, res:
         })
     )
 })
+

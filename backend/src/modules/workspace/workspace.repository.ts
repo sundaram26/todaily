@@ -1,9 +1,9 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
-import { Project, ProjectDb, Task, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
-import { and, eq, isNull } from "drizzle-orm";
+import { CustomField, Project, ProjectDb, Task, UpdateCustomField, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
-import { projectMemberTable, projectTable, taskTable } from "@/db/schema";
+import { customFieldTable, projectMemberTable, projectTable, taskLabelTable, taskTable } from "@/db/schema";
 import { AppError } from "@/utils/app-error";
 
 
@@ -183,19 +183,24 @@ export class WorkspaceRepository {
     }
 
     async findProjectWithoutWorkspaceByUserId(user_id: string) {
-        return db.query.projectTable.findMany({
-          where: and(
-            eq(projectTable.created_by, user_id),
-            eq(projectTable.is_deleted, false),
-            isNull(projectTable.workspace_id),
-          ),
-          columns: {
-            id: true,
-            title: true,
-            description: true,
-            created_by: true,
-            workspace_id: true,
-            created_at: true,
+        return db.query.projectMemberTable.findMany({
+          where: eq(projectMemberTable.user_id, user_id),
+          with: {
+            project: {
+              where: and(
+                eq(projectTable.created_by, user_id),
+                eq(projectTable.is_deleted, false),
+                isNull(projectTable.workspace_id),
+              ),
+              columns: {
+                id: true,
+                title: true,
+                description: true,
+                created_by: true,
+                workspace_id: true,
+                created_at: true,
+              },
+            },
           },
         });
     }
@@ -255,5 +260,69 @@ export class WorkspaceRepository {
         })
     }
 
-    
+    async addCustomField(data: CustomField) {
+        const [field] = await db.insert(customFieldTable).values(data).returning({
+            id: customFieldTable.id,
+            project_id: customFieldTable.project_id,
+            title: customFieldTable.title,
+            color: customFieldTable.color,
+            type: customFieldTable.type,
+            position: customFieldTable.position
+        });
+        return field;
+    }
+
+    async updateCustomField(field_id: string, data: UpdateCustomField) {
+        const filteredData = cleanData(data);
+        const [field] = await db
+          .update(customFieldTable)
+          .set(filteredData)
+          .where(eq(customFieldTable.id, field_id))
+          .returning({
+            id: customFieldTable.id,
+            project_id: customFieldTable.project_id,
+            title: customFieldTable.title,
+            color: customFieldTable.color,
+            type: customFieldTable.type,
+            position: customFieldTable.position,
+          });
+        return field;
+    }
+
+    async deleteCustomField(field_id: string) {
+        return await db.delete(customFieldTable).where(eq(customFieldTable.id, field_id));
+    }
+
+    async findCustomFieldByProjectId(project_id: string, type?: "status" | "priority" | "label") {
+        return await db.query.customFieldTable.findMany({
+            where: and(
+                eq(customFieldTable.project_id, project_id),
+                type ? eq(customFieldTable.type, type) : undefined
+            ),
+            orderBy: asc(customFieldTable.position)
+        })
+    }
+
+    async addTaskLabel(task_id: string, field_id: string) {
+        const [label] = await db.insert(taskLabelTable).values({task_id, field_id}).returning()
+        return label;
+    }
+
+    async removeTaskLabel(task_id: string, field_id: string) {
+        return await db.delete(taskLabelTable).where(
+            and(
+                eq(taskLabelTable.task_id, task_id),
+                eq(taskLabelTable.field_id, field_id)
+            )
+        )
+    }
+
+    async findTaskLabels(task_id: string) {
+        return await db.query.taskLabelTable.findMany({
+            where: eq(taskLabelTable.task_id, task_id),
+            with: {
+                field: true
+            }
+        })
+    }
 }

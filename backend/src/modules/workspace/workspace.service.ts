@@ -1,6 +1,6 @@
 import { AppError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { WorkspaceRepository } from "./workspace.repository";
-import { ProjectDb, UpdateProject, WorkspaceDb } from "./workspace.schema";
+import { CustomField, ProjectDb, UpdateCustomField, UpdateProject, WorkspaceDb } from "./workspace.schema";
 
 
 
@@ -54,11 +54,21 @@ export class WorkspaceService {
     async findUserProjectsWithoutWorkspace(user_id: string) {
         const project = await this.workspaceRepo.findProjectWithoutWorkspaceByUserId(user_id);
 
-        if (project.length === 0) {
-            throw new NotFoundError("Projects not found!");
+        return project;
+    }
+
+    async addCustomField(data: CustomField) {
+        const field = await this.workspaceRepo.addCustomField(data);
+
+        if (!field) {
+            throw new AppError("unable to create new field!");
         }
 
-        return project;
+        return field;
+    }
+
+    async updateCustomField(field_id: string, data: UpdateCustomField) {
+        
     }
 }
 
