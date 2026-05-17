@@ -49,30 +49,45 @@ export const projects = [
     title: 'Website Redesign',
     description: 'Complete overhaul of the company website with new branding and improved UX',
     created_by: '550e8400-e29b-41d4-a716-446655440001',
-    is_deleted: false,
+    position: 0,
     updated_at: new Date('2024-02-01T14:20:00Z'),
     created_at: new Date('2024-01-10T09:00:00Z'),
-    deleted_at: null
   },
   {
     id: '650e8400-e29b-41d4-a716-446655440001',
     title: 'Mobile App Development',
     description: 'Build a cross-platform mobile app for iOS and Android',
     created_by: '550e8400-e29b-41d4-a716-446655440002',
-    is_deleted: false,
+    position: 1,
     updated_at: new Date('2024-02-05T11:30:00Z'),
     created_at: new Date('2024-01-15T09:00:00Z'),
-    deleted_at: null
   },
   {
     id: '650e8400-e29b-41d4-a716-446655440002',
     title: 'Marketing Campaign Q1',
     description: 'Plan and execute Q1 marketing initiatives',
     created_by: '550e8400-e29b-41d4-a716-446655440003',
-    is_deleted: false,
+    position: 2,
     updated_at: new Date('2024-02-10T16:45:00Z'),
     created_at: new Date('2024-01-20T09:00:00Z'),
-    deleted_at: null
+  },
+  {
+    id: '650e8400-e29b-41d4-a716-446655440003',
+    title: 'New Product Launch',
+    description: 'Plan and execute the launch of our new product',
+    created_by: '550e8400-e29b-41d4-a716-446655440003',
+    position: 3,
+    updated_at: new Date('2024-02-10T16:45:00Z'),
+    created_at: new Date('2024-01-20T09:00:00Z'),
+  },
+  {
+    id: '650e8400-e29b-41d4-a716-446655440004',
+    title: 'Customer Feedback Analysis',
+    description: 'Analyze customer feedback to identify areas for improvement',
+    created_by: '550e8400-e29b-41d4-a716-446655440003',
+    position: 4,
+    updated_at: new Date('2024-02-10T16:45:00Z'),
+    created_at: new Date('2024-01-20T09:00:00Z'),
   }
 ];
 

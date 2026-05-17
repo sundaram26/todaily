@@ -68,6 +68,16 @@ export class WorkspaceService {
     }
 
     async updateCustomField(field_id: string, data: UpdateCustomField) {
+        const field = await this.workspaceRepo.updateCustomField(field_id, data);
+
+        if (!field) {
+            throw new AppError("unable to update the field!");
+        }
+
+        return field;
+    }
+
+    async updateStatus(field_id: string, task_id: string) {
         
     }
 }

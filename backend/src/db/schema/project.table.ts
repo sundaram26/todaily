@@ -8,6 +8,7 @@ export const projectTable = p.pgTable("projects", {
   workspace_id: p.uuid().references(() => workspaceTable.id, { onDelete: "set null" }),
   title: p.varchar({ length: 255 }).notNull(),
   description: p.text(),
+  position: p.integer().default(0).notNull(),
   created_by: p
     .uuid()
     .references(() => userTable.id, { onDelete: "set null" }),

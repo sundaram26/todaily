@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
 import { CustomField, Project, ProjectDb, Task, UpdateCustomField, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
 import { customFieldTable, projectMemberTable, projectTable, taskLabelTable, taskTable } from "@/db/schema";
 import { AppError } from "@/utils/app-error";
@@ -126,12 +126,28 @@ export class WorkspaceRepository {
 
     async addProject(data: ProjectDb) {
         return db.transaction(async (tx) => {
-            const [project] = await tx.insert(projectTable).values(data).returning({
+            const whereClause = data.workspace_id
+                ? eq(projectTable.workspace_id, data.workspace_id)
+                : and(
+                    isNull(projectTable.workspace_id),
+                    eq(projectTable.created_by, data.created_by)
+                )
+            const projects = await tx.query.projectTable.findMany({
+                where: whereClause,
+                columns: {
+                    position: true
+                },
+                orderBy: [desc(projectTable.position)],
+                limit: 1
+            })
+            if(!projects) throw new AppError("Failed to find the position!")
+            const nextPosition = projects[0] ? projects[0].position + 1 : 0;
+            const [project] = await tx.insert(projectTable).values({ ...data, position: nextPosition }).returning({
                 id: projectTable.id,
                 title: projectTable.title
             });
             if (!project) {
-                throw new AppError("Failed to create project");
+                throw new AppError("Failed to create project!");
             }
             await tx.insert(projectMemberTable).values({
                 project_id: project.id,
@@ -184,24 +200,25 @@ export class WorkspaceRepository {
 
     async findProjectWithoutWorkspaceByUserId(user_id: string) {
         return db.query.projectMemberTable.findMany({
-          where: eq(projectMemberTable.user_id, user_id),
-          with: {
-            project: {
-              where: and(
-                eq(projectTable.created_by, user_id),
-                eq(projectTable.is_deleted, false),
-                isNull(projectTable.workspace_id),
-              ),
-              columns: {
-                id: true,
-                title: true,
-                description: true,
-                created_by: true,
-                workspace_id: true,
-                created_at: true,
-              },
+            where: eq(projectMemberTable.user_id, user_id),
+            with: {
+                project: {
+                    where: and(
+                        eq(projectTable.created_by, user_id),
+                        eq(projectTable.is_deleted, false),
+                        isNull(projectTable.workspace_id),
+                    ),
+                    columns: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        created_by: true,
+                        workspace_id: true,
+                        created_at: true,
+                    },
+                    orderBy: asc(projectTable.position)
+                },
             },
-          },
         });
     }
 
@@ -275,17 +292,17 @@ export class WorkspaceRepository {
     async updateCustomField(field_id: string, data: UpdateCustomField) {
         const filteredData = cleanData(data);
         const [field] = await db
-          .update(customFieldTable)
-          .set(filteredData)
-          .where(eq(customFieldTable.id, field_id))
-          .returning({
-            id: customFieldTable.id,
-            project_id: customFieldTable.project_id,
-            title: customFieldTable.title,
-            color: customFieldTable.color,
-            type: customFieldTable.type,
-            position: customFieldTable.position,
-          });
+            .update(customFieldTable)
+            .set(filteredData)
+            .where(eq(customFieldTable.id, field_id))
+            .returning({
+                id: customFieldTable.id,
+                project_id: customFieldTable.project_id,
+                title: customFieldTable.title,
+                color: customFieldTable.color,
+                type: customFieldTable.type,
+                position: customFieldTable.position,
+            });
         return field;
     }
 
@@ -304,7 +321,7 @@ export class WorkspaceRepository {
     }
 
     async addTaskLabel(task_id: string, field_id: string) {
-        const [label] = await db.insert(taskLabelTable).values({task_id, field_id}).returning()
+        const [label] = await db.insert(taskLabelTable).values({ task_id, field_id }).returning()
         return label;
     }
 
@@ -324,5 +341,23 @@ export class WorkspaceRepository {
                 field: true
             }
         })
+    }
+
+    async updateStatus(task_id: string, field_id: string) {
+        const [task] = await db.update(taskTable).set({ status_id: field_id }).where(eq(taskTable.id, task_id)).returning({
+            task_id: taskTable.id,
+            status_id: taskTable.status_id
+        });
+
+        return task
+    }
+
+    async updatePriority(task_id: string, field_id: string) {
+        const [task] = await db.update(taskTable).set({ status_id: field_id }).where(eq(taskTable.id, task_id)).returning({
+            task_id: taskTable.id,
+            priority_id: taskTable.priority_id
+        });
+
+        return task
     }
 }
