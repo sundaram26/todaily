@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import { WorkspaceService } from "./workspace.service";
 import { WorkspaceRepository } from "./workspace.repository";
 import { ApiResponse } from "@/utils/api-response";
-import { AppError, UnauthorizedError } from "@/utils/app-error";
+import { AppError, BadRequestError, UnauthorizedError } from "@/utils/app-error";
 
 
 const workspaceService = new WorkspaceService(new WorkspaceRepository());
@@ -73,3 +73,41 @@ export const getProjectWithoutWorkspace = asyncHandler(async (req: Request, res:
     )
 })
 
+export const createCustomField = asyncHandler(async (req: Request, res: Response) => {
+  const field = await workspaceService.addCustomField(req.body);
+  return res.json(
+    new ApiResponse({
+      status: 201,
+      message: "successfully created new field",
+      data: field
+    })
+  )
+})
+
+export const updateCustomField = asyncHandler(async (req: Request, res: Response) => {
+  const field = await workspaceService.updateCustomField(req.body);
+  return res.json(
+    new ApiResponse({
+      status: 201,
+      message: "successfully created new field",
+      data: field
+    })
+  )
+})
+
+export const getCustomFieldByProjectId = asyncHandler(async (req: Request, res: Response) => {
+  const { project_id } = req.params;
+  if (!project_id || !(typeof project_id === "string")) {
+    throw new BadRequestError("Invalid project Id!");
+  }
+
+  const field = await workspaceService.findCustomFieldByProjectId(project_id);
+
+  return res.json(
+    new ApiResponse({
+      status: 200,
+      message: "successfully fetched all project fields",
+      data: field
+    })
+  )
+})

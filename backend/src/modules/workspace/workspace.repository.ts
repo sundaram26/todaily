@@ -289,12 +289,12 @@ export class WorkspaceRepository {
         return field;
     }
 
-    async updateCustomField(field_id: string, data: UpdateCustomField) {
+    async updateCustomField(data: UpdateCustomField) {
         const filteredData = cleanData(data);
         const [field] = await db
             .update(customFieldTable)
             .set(filteredData)
-            .where(eq(customFieldTable.id, field_id))
+            .where(eq(customFieldTable.id, data.id))
             .returning({
                 id: customFieldTable.id,
                 project_id: customFieldTable.project_id,
@@ -310,11 +310,10 @@ export class WorkspaceRepository {
         return await db.delete(customFieldTable).where(eq(customFieldTable.id, field_id));
     }
 
-    async findCustomFieldByProjectId(project_id: string, type?: "status" | "priority" | "label") {
+    async findCustomFieldByProjectId(project_id: string) {
         return await db.query.customFieldTable.findMany({
             where: and(
                 eq(customFieldTable.project_id, project_id),
-                type ? eq(customFieldTable.type, type) : undefined
             ),
             orderBy: asc(customFieldTable.position)
         })

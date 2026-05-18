@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -73,7 +74,7 @@ export const AddProjectModal = ({ isOpen, setIsOpen }: AddProjectModalProps) => 
           onClick={handleCancel}
         />
 
-        <div className="max-h-[95vh] w-full max-w-2xl z-60 bg-primary-foreground border-2 border-ring overflow-scroll no-scrollbar scroll-smooth tracking-tight">
+        <div className="max-h-[95vh] w-full max-w-2xl z-60 bg-primary-foreground border-2 border-ring tracking-tight">
           <div className="h-[10vh] border-b-2 border-primary flex items-center p-4">
             <h1 className="font-bold text-2xl">Add Project</h1>
           </div>
@@ -82,7 +83,7 @@ export const AddProjectModal = ({ isOpen, setIsOpen }: AddProjectModalProps) => 
               <FieldGroup>
                 <Field className="w-full py-2">
                   <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
-                    Title <span className="text-red-500">*</span>
+                    Title
                   </FieldLabel>
                   <Input
                     type="text"
@@ -98,82 +99,118 @@ export const AddProjectModal = ({ isOpen, setIsOpen }: AddProjectModalProps) => 
                   <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
                     Description
                   </FieldLabel>
-                  <textarea
+                  <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="This is Crazy Project..."
-                    className="rounded-sm h-20 md:h-24 border-2 border-border bg-input text-sm font-medium p-2 resize-none"
+                    className="rounded-sm h-20 md:h-24 border-2 border-border bg-input text-sm font-medium resize-none"
                     rows={3}
                   />
                 </Field>
 
                 <FieldSeparator />
 
-                <Field className="w-full py-2">
-                  <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5">
-                    Custom Fields
-                  </FieldLabel>
-                  <div className="flex flex-wrap gap-2 items-end">
-                    {customFields.map((field) => (
-                      <div
-                        key={field.id}
-                        className="flex items-center gap-2 px-2 py-1 border-2 border-border rounded-sm bg-input"
-                      >
-                        <Select
-                          value={field.type}
-                          onValueChange={(value) =>
-                            updateCustomField(field.id, "type", value)
-                          }
-                        >
-                          <SelectTrigger
-                            className="px-2 py-1 border-2 border-border rounded-sm bg-background text-sm font-medium h-10 md:h-12"
-                          >
-                            <SelectValue placeholder="Field Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="status">Status</SelectItem>
-                              <SelectItem value="priority">Priority</SelectItem>
-                              <SelectItem value="label">Label</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          type="text"
-                          value={field.title}
-                          onChange={(e) =>
-                            updateCustomField(field.id, "title", e.target.value)
-                          }
-                          placeholder="Name"
-                          className="h-8 rounded-sm border-2 border-border bg-input text-sm font-medium"
-                        />
-
-                        <Input
-                          type="color"
-                          value={field.color}
-                          onChange={(e) =>
-                            updateCustomField(field.id, "color", e.target.value)
-                          }
-                          className="h-8 w-8 rounded-sm cursor-pointer p-0 border-2 border-border"
-                        />
-
-                        <button
-                          type="button"
-                          onClick={() => removeCustomField(field.id)}
-                          className="text-muted-foreground hover:text-foreground px-2 text-lg font-bold"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-
+                <Field className="max-h-36 w-full py-2 overflow-scroll no-scrollbar scroll-smooth">
+                  <div className="flex items-center justify-between mb-2">
+                    <FieldLabel className="font-semibold text-foreground text-sm gap-0 leading-1.5 m-0">
+                      Custom Fields
+                    </FieldLabel>
                     <Button
                       type="button"
                       onClick={addCustomField}
-                      className="h-10 md:h-12 bg-transparent border-primary rounded-sm text-primary font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/50 hover:scale-[1.02] disabled:bg-primary/50 transition-transform ml-auto"
+                      className="h-8 px-3 bg-transparent border-2 border-primary rounded-sm text-primary text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/50 disabled:bg-primary/50 transition-transform"
                     >
-                      <Plus /> Add Custom Field
+                      <Plus className="w-4 h-4 mr-1" /> Add
                     </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {customFields.length === 0 ? (
+                      <div className="text-center py-6 border-2 border-dashed border-border rounded-sm text-muted-foreground text-sm">
+                        No custom fields yet. Click "Add" to create one.
+                      </div>
+                    ) : (
+                      customFields.map((field) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center gap-3 p-3 border-2 border-border rounded-sm bg-input"
+                        >
+                          <Select
+                            value={field.type}
+                            onValueChange={(value) =>
+                              updateCustomField(field.id, "type", value)
+                            }
+                          >
+                            <SelectTrigger className="w-32 h-9 border-2 border-border rounded-sm bg-background text-sm font-medium">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent className=" bg-primary-foreground">
+                              <SelectGroup>
+                                <SelectItem value="label">Project Label</SelectItem>
+                                <SelectItem value="status">Task Status</SelectItem>
+                                <SelectItem value="priority">
+                                  Task Priority
+                                </SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+
+                          <Input
+                            type="text"
+                            value={field.title}
+                            onChange={(e) =>
+                              updateCustomField(
+                                field.id,
+                                "title",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="Field name..."
+                            className="flex-1 h-9 min-w-0 rounded-sm border-2 border-border bg-input text-sm font-medium"
+                          />
+
+                          <div className="flex items-center gap-2">
+                            <div className="relative w-9 h-9 shrink-0">
+                              <Input
+                                type="color"
+                                defaultValue="#000000"
+                                value={field.color}
+                                onChange={(e) =>
+                                  updateCustomField(
+                                    field.id,
+                                    "color",
+                                    e.target.value,
+                                  )
+                                }
+                                className="absolute inset-0 w-full h-full rounded-sm cursor-pointer border-2 border-border p-0.5"
+                              />
+                            </div>
+                            <Input
+                              type="text"
+                              value={field.color}
+                              onChange={(e) =>
+                                updateCustomField(
+                                  field.id,
+                                  "color",
+                                  e.target.value,
+                                )
+                              }
+                              className="w-20 h-9 rounded-sm border-2 border-border bg-input text-sm font-mono"
+                              maxLength={7}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeCustomField(field.id)}
+                              className="h-9 w-9 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </Field>
 

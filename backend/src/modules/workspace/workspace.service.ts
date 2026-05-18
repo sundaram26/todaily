@@ -67,8 +67,8 @@ export class WorkspaceService {
         return field;
     }
 
-    async updateCustomField(field_id: string, data: UpdateCustomField) {
-        const field = await this.workspaceRepo.updateCustomField(field_id, data);
+    async updateCustomField(data: UpdateCustomField) {
+        const field = await this.workspaceRepo.updateCustomField(data);
 
         if (!field) {
             throw new AppError("unable to update the field!");
@@ -77,8 +77,14 @@ export class WorkspaceService {
         return field;
     }
 
-    async updateStatus(field_id: string, task_id: string) {
-        
+    async findCustomFieldByProjectId(project_id: string) {
+        const field = await this.workspaceRepo.findCustomFieldByProjectId(project_id);
+
+        if (!field) {
+            throw new NotFoundError("Fields not found for project!");
+        }
+
+        return field;
     }
 }
 

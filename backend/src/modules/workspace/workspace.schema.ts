@@ -55,10 +55,12 @@ export const CustomFieldSchema = z.object({
   title: z.string().min(1).max(255, "Maximum length exceeded!"),
   color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
   type: FieldTypeEnum,
-  position: z.number().int().min(0).default(0),
+  position: z.number().int().min(0).default(0).optional(),
 });
 
-export const UpdateCustomFieldSchema = CustomFieldSchema.partial();
+export const UpdateCustomFieldSchema = CustomFieldSchema.partial().extend({
+    id: z.uuid()
+});
 
 export const TaskSchema = z.object({
     project_id: z.uuid(),
