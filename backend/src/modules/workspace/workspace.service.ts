@@ -1,6 +1,6 @@
 import { AppError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { WorkspaceRepository } from "./workspace.repository";
-import { CustomField, ProjectDb, UpdateCustomField, UpdateProject, WorkspaceDb } from "./workspace.schema";
+import { CustomField, ProjectDb, ReorderProjects, UpdateCustomField, UpdateProject, WorkspaceDb } from "./workspace.schema";
 
 
 
@@ -13,10 +13,24 @@ export class WorkspaceService {
     // }
 
     async createProject(data: ProjectDb) {
-        const project = await this.workspaceRepo.addProject(data);
+        const { customFields, ...projectData } = data as any;
+        const project = await this.workspaceRepo.addProject(projectData);
 
         if (!project) {
             throw new AppError("Unable to create the project!");
+        }
+
+        if (
+          customFields &&
+          Array.isArray(customFields) &&
+          customFields.length > 0
+        ) {
+          for (const field of customFields) {
+            await this.workspaceRepo.addCustomField({
+              ...field,
+              project_id: project.id, // Use the new project's ID
+            });
+          }
         }
 
         return project;
@@ -57,7 +71,25 @@ export class WorkspaceService {
         return project;
     }
 
-    async addCustomField(data: CustomField) {
+    async reorderProjects(user_id: string, data: ReorderProjects) {
+        for (const project of data.projects) {
+            const existingProject = await this.workspaceRepo.findProjectById(project.id);
+            if (!existingProject) {
+                throw new NotFoundError(`Project ${project.id} not found`)
+            }
+            if (existingProject.created_by !== user_id) {
+                throw new UnauthorizedError("Not allowed to modify this project")
+            }
+        }
+
+        await this.workspaceRepo.updateProjectPosition(data);
+
+        return {
+            message: "Successfully reordered projects"
+        };
+    }
+
+    async addCustomField(data: CustomField & {project_id: string}) {
         const field = await this.workspaceRepo.addCustomField(data);
 
         if (!field) {

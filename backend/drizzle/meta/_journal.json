@@ -29,6 +29,34 @@
       "when": 1778525732455,
       "tag": "0003_typical_drax",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779205119604,
+      "tag": "0004_curious_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779211689521,
+      "tag": "0005_nappy_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779211749698,
+      "tag": "0006_sparkling_swarm",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779214437388,
+      "tag": "0007_rich_vampiro",
+      "breakpoints": true
     }
   ]
 }

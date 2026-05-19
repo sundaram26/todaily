@@ -9,68 +9,83 @@ import { AppError, BadRequestError, UnauthorizedError } from "@/utils/app-error"
 const workspaceService = new WorkspaceService(new WorkspaceRepository());
 
 export const createProject = asyncHandler(async (req: Request, res: Response) => {
-    const created_by = req.user?.user_id;
-    const data = req.body;
-    const projectData = {
-        ...data,
-        created_by
-    }
+  const created_by = req.user?.user_id;
+  const data = req.body;
+  const { customFields, ...projectData } = data;
+  const projectDataWithUser = {
+    ...projectData,
+    created_by
+  }
 
-    const project = await workspaceService.createProject(projectData);
+  const project = await workspaceService.createProject({ ...projectDataWithUser, customFields });
 
-    res.status(201).json(
-      new ApiResponse({
-        status: 201,
-        message: "successfully created project",
-        data: project,
-      }),
-    );
+  res.status(201).json(
+    new ApiResponse({
+      status: 201,
+      message: "successfully created project",
+      data: project,
+    }),
+  );
 })
 
 export const updateProject = asyncHandler(async (req: Request, res: Response) => {
-    const user_id = req.user?.user_id;
-    if (!user_id) {
-        throw new UnauthorizedError("user not found!");
-    }
-    const project = await workspaceService.updateProject(user_id, req.body);
+  const user_id = req.user?.user_id;
+  if (!user_id) {
+    throw new UnauthorizedError("user not found!");
+  }
+  const project = await workspaceService.updateProject(user_id, req.body);
 
-    res.status(200).json(
-      new ApiResponse({
-        status: 200,
-        message: "successfully updated project",
-        data: project,
-      }),
-    );
+  res.status(200).json(
+    new ApiResponse({
+      status: 200,
+      message: "successfully updated project",
+      data: project,
+    }),
+  );
 })
 
 export const getProjectById = asyncHandler(async (req: Request, res: Response) => {
-    const { project_id }= req.params;
-    
-    if (!project_id || (typeof project_id !== "string")) throw new AppError("Project id is required!");
+  const { project_id } = req.params;
 
-    const project = await workspaceService.findProjectById(project_id);
+  if (!project_id || (typeof project_id !== "string")) throw new AppError("Project id is required!");
 
-    res.status(200).json(
-      new ApiResponse({
-        status: 200,
-        message: "successfully fetched project details",
-        data: project,
-      }),
-    );
+  const project = await workspaceService.findProjectById(project_id);
+
+  res.status(200).json(
+    new ApiResponse({
+      status: 200,
+      message: "successfully fetched project details",
+      data: project,
+    }),
+  );
 })
 
 export const getProjectWithoutWorkspace = asyncHandler(async (req: Request, res: Response) => {
-    const user_id = req.user?.user_id;
-    if (!user_id) throw new UnauthorizedError("user not found");
-    const projects = await workspaceService.findUserProjectsWithoutWorkspace(user_id);
+  const user_id = req.user?.user_id;
+  if (!user_id) throw new UnauthorizedError("user not found");
+  const projects = await workspaceService.findUserProjectsWithoutWorkspace(user_id);
 
-    res.status(200).json(
-        new ApiResponse({
-            status: 200,
-            message: "successfully fetched all projects",
-            data: projects
-        })
-    )
+  res.status(200).json(
+    new ApiResponse({
+      status: 200,
+      message: "successfully fetched all projects",
+      data: projects
+    })
+  )
+})
+
+export const reorderProjects = asyncHandler(async (req: Request, res: Response) => {
+  const user_id = req.user?.user_id;
+  if (!user_id) throw new UnauthorizedError("user not found!");
+
+  const result = await workspaceService.reorderProjects(user_id, req.body);
+
+  return res.json(
+    new ApiResponse({
+      status: 200,
+      message: result.message
+    })
+  )
 })
 
 export const createCustomField = asyncHandler(async (req: Request, res: Response) => {
@@ -88,7 +103,7 @@ export const updateCustomField = asyncHandler(async (req: Request, res: Response
   const field = await workspaceService.updateCustomField(req.body);
   return res.json(
     new ApiResponse({
-      status: 201,
+      status: 200,
       message: "successfully created new field",
       data: field
     })

@@ -1,39 +1,58 @@
 import z from "zod";
-
-export const CreateProject = z.object({
-    workspace_id: z.uuid().optional(),
-    title: z.string(),
-    description: z.string().optional(),
-}) 
-
-export const UpdateProject = CreateProject.partial().extend({
-    id: z.uuid()
-})
+import { customFields } from "./dummy-data";
 
 export const FieldTypeEnum = z.enum(["label", "status", "priority"]);
 
-export const CreateCustomField = z.object({
-  title: z.string().min(1).max(255, "Maximum length exceeded!"),
-  color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
+export const CustomField = z.object({
+  id: z.uuid().optional(),
+  title: z.string().max(255, "Maximum length exceeded!"),
+  project_id: z.uuid().optional(),
+  color: z.string(),
   type: FieldTypeEnum,
   position: z.number().int().min(0).optional(),
 });
 
-export const UpdateCustomField = CreateCustomField.partial().extend({
-    id: z.uuid()
+export const CreateProject = z.object({
+  workspace_id: z.uuid().optional(),
+  title: z.string(),
+  description: z.string().optional(),
+  label_id: z.uuid().optional(),
+  due_date: z.date().optional(),
+  customFields: z.array(CustomField).optional()
 })
 
+export const UpdateProject = CreateProject.partial().extend({
+  id: z.string().min(1, "ID is required"),
+});
 
-export type Project = {
-    id: string,
-    title: string,
-    description?: string,
-    workspace_id?: string,
-    created_by: string,
-    created_at: string,
-    updated_at: string
-};
+export const ReorderProject = z.object({
+  projects: z.array(
+    z.object({
+      id: z.uuid(),
+      position: z.number().int().min(0),
+    }),
+  ),
+});
+
+
+export const UpdateCustomField = CustomField.partial().extend({
+  id: z.uuid().min(1, "ID is required"),
+});
+
 export type CreateProjectType = z.infer<typeof CreateProject>;
 export type UpdateProjectType = z.infer<typeof UpdateProject>;
-export type CreateCustomFieldType = z.infer<typeof CreateCustomField>;
+export type ReorderProjectType = z.infer<typeof ReorderProject>;
+export type CustomFieldType = z.infer<typeof CustomField>;
 export type UpdateCustomFieldType = z.infer<typeof UpdateCustomField>;
+
+export type Project = {
+  id: string,
+  title: string,
+  description?: string,
+  label_id?: string,
+  due_date?: string,
+  workspace_id?: string,
+  created_by: string,
+  created_at: string,
+  updated_at: string
+};

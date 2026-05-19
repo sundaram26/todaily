@@ -9,6 +9,8 @@ export const projectTable = p.pgTable("projects", {
   title: p.varchar({ length: 255 }).notNull(),
   description: p.text(),
   position: p.integer().default(0).notNull(),
+  label_id: p.uuid(),
+  due_date: p.timestamp(),
   created_by: p
     .uuid()
     .references(() => userTable.id, { onDelete: "set null" }),

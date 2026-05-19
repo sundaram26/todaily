@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { projects as initialProjects } from "../dummy-data";
 
 export interface Project {
   id: string;
@@ -10,27 +9,40 @@ export interface Project {
   updated_at: Date;
   created_at: Date;
 }
-interface ProjectStore {
-    projects: Project[];
 
-    reorderProjects: (initailIndex: number, index: number) => void;
+export interface CustomField{
+    id: string;
+    type: "status" | "priority" | "label";
+    title: string;
+    color: string;
 }
 
+type ProjectState = {
+    isModalOpen: boolean;
+    isEditMode: boolean;
+    editingProjectId?: string;
+}
 
-export const useProjectStore = create<ProjectStore>((set, get) => ({
-    projects: initialProjects,
-    reorderProjects: (initialIndex, index) => {
-        const projects = [...get().projects];
+type ProjectActions = {
+    openModal: (mode?: 'create' | 'edit', projectId?: string) => void;
+    closeModal: () => void    
+}
 
-        const initialPosition = projects.findIndex(p => p.position === initialIndex)
-        const finalPosition = projects.findIndex(p => p.position === index);
+type ProjectStore = ProjectState & ProjectActions;
 
-        const [movedProject] = projects.splice(initialPosition, 1);
-        projects.splice(finalPosition, 0, movedProject);
+export const useProjectStore = create<ProjectStore>((set) => ({
+    isModalOpen: false,
+    isEditMode: false,
 
-        // Update positions
-        const reordered = projects.map((p, i) => ({ ...p, position: i }));
+    openModal: (mode = 'create', projectId) => set({
+        isModalOpen: true,
+        isEditMode: mode === 'edit',
+        editingProjectId: projectId,
+    }),
 
-        set({ projects: reordered });
-    },
+    closeModal: () => set({
+        isModalOpen: false,
+        isEditMode: false,
+        editingProjectId: undefined
+    })
 }));

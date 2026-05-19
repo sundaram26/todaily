@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
-import { CustomField, Project, ProjectDb, Task, UpdateCustomField, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
+import { CustomField, Project, ProjectDb, ReorderProjects, Task, UpdateCustomField, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
 import { customFieldTable, projectMemberTable, projectTable, taskLabelTable, taskTable } from "@/db/schema";
@@ -167,7 +167,10 @@ export class WorkspaceRepository {
             .where(eq(projectTable.id, data.id))
             .returning({
                 id: projectTable.id,
-                title: projectTable.title
+                title: projectTable.title,
+                label_id: projectTable.label_id,
+                due_date: projectTable.due_date,
+                description: projectTable.description
             });
 
         return project;
@@ -191,9 +194,12 @@ export class WorkspaceRepository {
                 id: true,
                 title: true,
                 description: true,
+                label_id: true,
+                due_date: true,
                 created_by: true,
                 workspace_id: true,
                 created_at: true,
+                updated_at: true
             }
         });
     }
@@ -212,9 +218,12 @@ export class WorkspaceRepository {
                         id: true,
                         title: true,
                         description: true,
+                        label_id: true,
+                        due_date: true,
                         created_by: true,
                         workspace_id: true,
                         created_at: true,
+                        updated_at: true
                     },
                     orderBy: asc(projectTable.position)
                 },
@@ -223,18 +232,29 @@ export class WorkspaceRepository {
     }
 
     async findWorkspaceProjectsByUserId(user_id: string, workspace_id: string) {
-        return await db.query.projectMemberTable.findMany({
+        const result =  await db.query.projectMemberTable.findMany({
             where: eq(projectMemberTable.user_id, user_id),
 
             with: {
-                project: {
-                    where: and(
-                        eq(projectTable.workspace_id, workspace_id),
-                        eq(projectTable.is_deleted, false),
-                    ),
-                },
+                project: true
             },
         });
+
+        return result.filter(
+            (member) => member.project.workspace_id === workspace_id
+                && member.project.is_deleted === false
+        )
+    }
+
+    async updateProjectPosition(data: ReorderProjects) {
+        return await db.transaction(async (tx) => {
+            for (const project of data.projects) {
+                await tx
+                    .update(projectTable)
+                    .set({ position: project.position })
+                    .where(eq(projectTable.id, project.id))
+            }
+        })
     }
 
     async findWorkspaceMembers(workspace_id: string) {
@@ -277,7 +297,7 @@ export class WorkspaceRepository {
         })
     }
 
-    async addCustomField(data: CustomField) {
+    async addCustomField(data: CustomField & {project_id: string}) {
         const [field] = await db.insert(customFieldTable).values(data).returning({
             id: customFieldTable.id,
             project_id: customFieldTable.project_id,

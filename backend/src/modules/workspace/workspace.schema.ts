@@ -23,10 +23,27 @@ export const WorkspaceMemberDbSchema = WorkspaceMemberSchema.extend({
     user_id: z.uuid(),
 })
 
+export const FieldTypeEnum = z.enum(["status", "priority", "label"]);
+
+export const CustomFieldSchema = z.object({
+  project_id: z.uuid().optional(),
+  title: z.string().min(1).max(255, "Maximum length exceeded!"),
+  color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
+  type: FieldTypeEnum,
+  position: z.number().int().min(0).default(0).optional(),
+});
+
+export const UpdateCustomFieldSchema = CustomFieldSchema.partial().extend({
+  id: z.uuid(),
+});
+
 export const ProjectSchema = z.object({
     workspace_id: z.uuid().optional(),
     title: z.string().min(1).max(255, "Maximum length exceeded!"),
     description: z.string().optional(),
+    label_id: z.uuid().optional(),
+    due_date: z.date().optional(),
+    customFields: z.array(CustomFieldSchema).optional(),
 });
 
 export const ProjectDbSchema = ProjectSchema.extend({
@@ -35,6 +52,13 @@ export const ProjectDbSchema = ProjectSchema.extend({
 
 export const UpdateProjectSchema = ProjectSchema.partial().extend({
     id: z.string()
+});
+
+export const ReorderProjectsSchema = z.object({
+    projects: z.array(z.object({
+        id: z.uuid(),
+        position: z.number().int().min(0),
+    })),
 });
 
 export const ProjectRoleEnum = z.enum(["owner", "admin", "member"]);
@@ -46,20 +70,6 @@ export const ProjectMemberSchema = z.object({
 
 export const ProjectMemberDbSchema = ProjectMemberSchema.extend({
     user_id: z.uuid(),
-});
-
-export const FieldTypeEnum = z.enum(["status", "priority", "label"]);
-
-export const CustomFieldSchema = z.object({
-  project_id: z.uuid(),
-  title: z.string().min(1).max(255, "Maximum length exceeded!"),
-  color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
-  type: FieldTypeEnum,
-  position: z.number().int().min(0).default(0).optional(),
-});
-
-export const UpdateCustomFieldSchema = CustomFieldSchema.partial().extend({
-    id: z.uuid()
 });
 
 export const TaskSchema = z.object({
@@ -116,6 +126,7 @@ export type UpdateWorkspace = z.infer<typeof UpdateWorkspaceSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
 export type ProjectDb = z.infer<typeof ProjectDbSchema>;
 export type UpdateProject = z.infer<typeof UpdateProjectSchema>;
+export type ReorderProjects = z.infer<typeof ReorderProjectsSchema>;
 export type CustomField = z.infer<typeof CustomFieldSchema>;
 export type UpdateCustomField = z.infer<typeof UpdateCustomFieldSchema>;
 export type Task = z.infer<typeof TaskSchema>;

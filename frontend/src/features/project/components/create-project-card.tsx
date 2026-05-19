@@ -2,16 +2,15 @@
 
 import { PlusIcon } from "@/common/icons/plus";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import { AddProjectModal } from "./add-project-modal";
+import { useProjectStore } from "../store/project.store";
 
 const CreateProjectCard = () => {
-    const [isOpen, setIsOpen] = useState(false);
-
+  const { isModalOpen, isEditMode,  openModal } = useProjectStore();
     return (
       <>
         <div
-          onClick={() => setIsOpen(true)}
+          onClick={(e: any) => openModal(e)}
           className={cn(
             "border-l border-t border-r border-b border-primary-foreground/60 bg-primary-foreground/60 inset-shadow-gray-800 -ml-px -mt-px",
             "flex flex-col justify-center items-center gap-2",
@@ -20,7 +19,7 @@ const CreateProjectCard = () => {
           <PlusIcon />
           <p className="font-semibold text-sm">Create New Project</p>
         </div>
-        <AddProjectModal isOpen={isOpen} setIsOpen={setIsOpen} />
+        {isModalOpen &&  isEditMode ? <AddProjectModal /> : <AddProjectModal />}
       </>
     );
 };

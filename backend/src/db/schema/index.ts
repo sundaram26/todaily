@@ -6,3 +6,4 @@ export * from "./notification.table";
 export * from "./activity-log.table";
 export * from "./system-config.table";
 export * from "./workspace.table";
+export * from "./relations";
