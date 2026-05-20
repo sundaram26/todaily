@@ -42,7 +42,7 @@ export const ProjectSchema = z.object({
     title: z.string().min(1).max(255, "Maximum length exceeded!"),
     description: z.string().optional(),
     label_id: z.uuid().optional(),
-    due_date: z.date().optional(),
+    due_date: z.string().optional().transform(val => val ? new Date(val) : undefined).optional(),
     customFields: z.array(CustomFieldSchema).optional(),
 });
 

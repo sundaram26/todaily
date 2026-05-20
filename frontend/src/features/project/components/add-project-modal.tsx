@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, LoaderCircle, Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProjectStore } from "../store/project.store";
 import { CreateProject, CreateProjectType } from "../types";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -49,6 +49,29 @@ export const AddProjectModal = () => {
       customFields: [],
     },
   });
+
+  useEffect(() => {
+    if (isEditMode && projectData?.data) {
+      const project = projectData.data;
+      reset({
+        title: project.title || "",
+        description: project.description || "",
+        label_id: project.label_id || undefined,
+        due_date: project.due_date ? new Date(project.due_date) : undefined,
+        customFields: project.customFields || [],
+      });
+      setDate(project.due_date ? new Date(project.due_date) : undefined);
+    } else if (!isEditMode) {
+      reset({
+        title: "",
+        description: "",
+        label_id: undefined,
+        due_date: undefined,
+        customFields: [],
+      });
+      setDate(undefined);
+    }
+  }, [isEditMode, projectData, reset]);
 
   const { fields, append, remove, update } = useFieldArray({
     control: control,
@@ -110,7 +133,7 @@ export const AddProjectModal = () => {
 
       <div className="max-h-[95vh] w-full max-w-2xl z-60 bg-primary-foreground border-2 border-ring tracking-tight">
         <div className="h-[10vh] border-b-2 border-primary flex items-center p-4">
-          <h1 className="font-bold text-2xl">Add Project</h1>
+          <h1 className="font-bold text-2xl">{isEditMode ? "Edit Project" : "Add Project"}</h1>
         </div>
         <div className="h-full w-full p-4 pb-4">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -296,10 +319,10 @@ export const AddProjectModal = () => {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={createProject.isPending}
+                  disabled={createProject.isPending || updateProject.isPending}
                   className="h-10 md:h-12 bg-primary rounded-sm text-white font-semibold focus-visible:ring-2 focus-visible:ring-ring hover:bg-primary/80 hover:scale-[1.02] disabled:bg-primary/80 transition-transform"
                 >
-                  {createProject.isPending ? (
+                  {(isEditMode ? updateProject.isPending : createProject.isPending) ? (
                     <>
                       <LoaderCircle className="animate-spin mr-2" />
                       Saving...

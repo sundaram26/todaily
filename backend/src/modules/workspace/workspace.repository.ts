@@ -200,6 +200,17 @@ export class WorkspaceRepository {
                 workspace_id: true,
                 created_at: true,
                 updated_at: true
+            },
+            with: {
+                customFields: {
+                    columns: {
+                        id: true,
+                        type: true,
+                        title: true,
+                        color: true,
+                        position: true
+                    }
+                }
             }
         });
     }

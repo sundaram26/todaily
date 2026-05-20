@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { useCustomFields } from "../hooks/use-custom-fields";
 import { EllipsisVertical, GripVertical } from "lucide-react";
+import { useProjectStore } from "../store/project.store";
+import { format } from "date-fns";
+import { useProjectTabStore } from "../store/project-tab.store";
 
 interface ProjectCardType {
   id: string;
@@ -10,6 +13,8 @@ interface ProjectCardType {
   description?: string;
   position?: number;
   label_id?: string;
+  created_at: string;
+  due_date: string;
 }
 
 const ProjectCard = ({ project }: { project: ProjectCardType }) => {
@@ -17,8 +22,9 @@ const ProjectCard = ({ project }: { project: ProjectCardType }) => {
     id: project.id,
     index: project.position ?? 0
   });
-
+  const { openModal } = useProjectStore();
   const { data: customFields } = useCustomFields(project.id);
+  const { openTab } = useProjectTabStore();
   const projectLabel = customFields?.find((field: any) => 
     field.id === project.label_id && field.type === "label"
   )
@@ -26,36 +32,73 @@ const ProjectCard = ({ project }: { project: ProjectCardType }) => {
   return (
     <div
       ref={ref}
+      onClick={() => openTab({id: project.id, title: project.title})}
       className={cn(
-        "border-l border-t border-r border-b border-ring bg-primary-foreground -ml-px -mt-px",
-        `${isDragSource ? "opacity-40" : "opacity-100"}`,
-        "p-4 cursor-pointer",
+        "border border-ring bg-primary-foreground",
+        "-ml-px -mt-px",
+        "p-3 sm:p-4",
+        "cursor-pointer",
+        "min-h-[220px]",
+        "transition-opacity",
+        isDragSource ? "opacity-40" : "opacity-100",
       )}
     >
-      <div className="relative">
-        <EllipsisVertical className="absolute right-0 text-xl text-foreground" />
-      </div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-xl text-foreground tracking-tight mb-2">
-          {project.title}
-        </h1>
-        {projectLabel && (
-          <div className="flex gap-2">
-            <span
-              className="px-2 py-1 text-xs rounded-full"
-              style={{
-                backgroundColor: projectLabel.color,
-                color: "#fff",
+      <div className="flex h-full flex-col justify-between gap-5">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            {projectLabel && (
+              <div
+                className="max-w-[120px] truncate rounded-full px-2 py-1 text-xs font-medium text-white"
+                style={{
+                  backgroundColor: projectLabel.color,
+                }}
+              >
+                {projectLabel.title}
+              </div>
+            )}
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openModal("edit", project.id);
               }}
+              className="rounded-md p-1.5 hover:bg-accent transition-colors"
             >
-              {projectLabel.title}
-            </span>
+              <EllipsisVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
           </div>
-        )}
+
+          <div className="space-y-1">
+            <h1 className="line-clamp-2 text-base font-bold tracking-tight sm:text-lg lg:text-xl">
+              {project.title}
+            </h1>
+
+            <p className="line-clamp-3 text-sm font-medium tracking-tight text-muted-foreground">
+              {project.description}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-foreground">Created</h3>
+
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              {format(project.created_at, "PPP")}
+            </p>
+          </div>
+
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-foreground">Due Date</h3>
+
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">
+              {project.due_date
+                ? format(project.due_date, "PPP")
+                : "No due date"}
+            </p>
+          </div>
+        </div>
       </div>
-      <p className="font-semibold text-sm text-foreground-muted tracking-tight">
-        {project.description}
-      </p>
     </div>
   );
 }
