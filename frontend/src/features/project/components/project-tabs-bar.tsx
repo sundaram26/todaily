@@ -9,7 +9,7 @@ export const ProjectTabs = () => {
     const { openTabs, activeTabId, setActiveTab } = useProjectTabStore();
 
     return (
-        <div className="h-full flex">
+        <div className="h-full flex cursor-pointer">
             {openTabs.map((project) => {
                 const isActiveTab = activeTabId === project.id;
                 return (

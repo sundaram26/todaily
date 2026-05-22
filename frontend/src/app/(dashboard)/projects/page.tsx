@@ -5,23 +5,36 @@ import { DragDropProvider, DragOverlay, useDragOperation } from "@dnd-kit/react"
 import { isSortable } from "@dnd-kit/react/sortable";
 import { useProjectsWithoutWorkspace } from "@/features/project/hooks/use-project";
 import { useReorderProject } from "@/features/project/hooks/use-reorder-project";
+import { useProjectTabStore } from "@/features/project/store/project-tab.store";
 
 interface ProjectType {
   id: string;
     title: string;
     description?: string;
-    position?: number;
+  position?: number;
+  created_at: string;
+  due_date: string;
 }
 
 function PageContent() {
   const { data: projectsData, isLoading } = useProjectsWithoutWorkspace();
   const reorderProject = useReorderProject();
+  const { activeTabId } = useProjectTabStore();
   const { source } = useDragOperation();
 
   const projects = projectsData?.data?.map((item: any) => item.project) || [];
   const draggedProject = source && projects.find((p: any) => p.id === source.id);
 
-  if(isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Loading...</div>;
+  
+  if (activeTabId) {
+    return (
+      <div>
+        activeId : {activeTabId}
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="grid h-[calc(100vh-61px)] grid-cols-3 grid-rows-2">
