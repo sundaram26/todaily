@@ -34,6 +34,53 @@ export const taskTable = p.pgTable(
   }),
 );
 
+export const propertyEnum = p.pgEnum("property_type", ["text", "number", "select", "multi_select", "date", "person", "file", "url", "checkbox"]);
+
+export const propertyDefinitionTable = p.pgTable(
+  "property_definitions",
+  {
+    id: p.uuid().primaryKey().defaultRandom(),
+    project_id: p.uuid().notNull().references(() => projectTable.id, { onDelete: "cascade" }),
+    name: p.varchar({ length: 255 }).notNull(),
+    type: propertyEnum().notNull(),
+    config: p.jsonb(),
+    position: p.integer().default(0).notNull(),
+    is_required: p.boolean().default(false),
+    ...timestamps
+  }, (t) => ({
+    projectIdx: p.index("property_project_idx").on(t.project_id),
+    projectTypeIdx: p.index("property_project_type_idx").on(t.project_id, t.type)
+  })
+)
+
+export const taskPropertyValueTable = p.pgTable(
+  "task_property_values",
+  {
+    task_id: p
+      .uuid()
+      .notNull()
+      .references(() => taskTable.id, { onDelete: "cascade" }),
+
+    property_id: p
+      .uuid()
+      .notNull()
+      .references(() => propertyDefinitionTable.id, { onDelete: "cascade" }),
+
+    value: p.jsonb(),
+
+    ...timestamps,
+  },
+  (t) => [
+    p.primaryKey({
+      columns: [t.task_id, t.property_id],
+    }),
+    {
+      propertyIdx: p.index("tpv_property_idx").on(t.property_id),
+      taskIdx: p.index("tpv_task_idx").on(t.task_id),
+    }
+  ],
+);
+
 export const taskAttachmentTable = p.pgTable(
   "task_attachments",
   {

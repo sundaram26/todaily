@@ -116,6 +116,56 @@ export const TaskAssignSchema = z.object({
     task_id: z.uuid()
 });
 
+export const propertyEnum = z.enum(["text", "number", "select", "multi_select", "date", "file", "url", "checkbox"]);
+
+export const PropertyDefinition = z.object({
+    id: z.uuid(),
+    project_id: z.uuid(),
+    name: z.string(),
+    type: propertyEnum.default("text"),
+    config: z.json(),
+    position: z.number().default(0),
+    is_required: z.boolean().default(false),
+});
+
+export const UpdatePropertyDefinition = PropertyDefinition.partial();
+
+export const TaskPropertyValue = z.object({
+    task_id: z.uuid(),
+    property_id: z.uuid(),
+    value: z.json()
+})
+
+const urlOrPathSchema = z.string().url().or(z.string().startsWith("/"));
+
+export const PropertyTypeSchema = {
+    text: z.object({
+        text: z.string()
+    }),
+    number: z.object({
+        number: z.number()
+    }),
+    select: z.object({
+        select: z.boolean(),
+    }),
+    multi_select: z.object({
+        multi_select: z.array(z.boolean())
+    }),
+    date: z.object({
+        date: z.date()
+    }),
+    file: z.object({
+        file: urlOrPathSchema
+    }),
+    url: z.object({
+        label: z.string(),
+        url: z.url()
+    }),
+    checkbox: z.object({
+        checked: z.boolean().default(false),
+    }),
+}
+
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 export type WorkspaceDb = z.infer<typeof WorkspaceDbSchema>;
@@ -137,3 +187,6 @@ export type TaskComment = z.infer<typeof TaskCommentSchema>;
 export type TaskCommentDb = z.infer<typeof TaskCommentDbSchema>;
 export type TaskLabel = z.infer<typeof TaskLabelSchema>;
 export type TaskAssign = z.infer<typeof TaskAssignSchema>;
+export type PropertyDefinition = z.infer<typeof PropertyDefinition>;
+export type UpdatePropertyDefinition = z.infer<typeof UpdatePropertyDefinition>;
+export type TaskPropertyValue = z.infer<typeof TaskPropertyValue>;
