@@ -160,3 +160,23 @@ export const userToTaskTable = p.pgTable(
     },
   ],
 );
+
+export const viewTypeEnum = p.pgEnum("view_type_enum", ["table", "gallery", "kanban"])
+export const columnTypeEnum = p.pgEnum("column_type_enum", ["builtin", "property"])
+
+export const viewColumnTable = p.pgTable(
+  "view_columns",
+  {
+    id: p.uuid().primaryKey().defaultRandom(),
+    project_id: p.uuid().notNull().references(() => projectTable.id, { onDelete: "cascade" }),
+    view_type: viewTypeEnum().notNull(),
+    column_type: columnTypeEnum().notNull(),
+    column_key: p.varchar({ length: 255 }),
+    position: p.integer().notNull().default(0),
+    is_visible: p.boolean().default(true),
+    ...timestamps
+  }, (t) => ({
+    projectIdx: p.index("view_column_project_idx").on(t.project_id),
+    projectViewIdx: p.index("view_column_project_view_idx").on(t.project_id)
+  })
+) 

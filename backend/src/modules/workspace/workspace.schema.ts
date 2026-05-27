@@ -79,6 +79,10 @@ export const TaskSchema = z.object({
     title: z.string(),
     description: z.string().optional(),
     position: z.number().int().min(0).default(0),
+    properties: z.array(z.object({
+        property_id: z.uuid(),
+        value: z.json()
+    })).optional()
 });
 
 export const TaskDbSchema = TaskSchema.extend({
@@ -130,12 +134,6 @@ export const PropertyDefinition = z.object({
 
 export const UpdatePropertyDefinition = PropertyDefinition.partial();
 
-export const TaskPropertyValue = z.object({
-    task_id: z.uuid(),
-    property_id: z.uuid(),
-    value: z.json()
-})
-
 const urlOrPathSchema = z.string().url().or(z.string().startsWith("/"));
 
 export const PropertyTypeSchema = {
@@ -166,6 +164,28 @@ export const PropertyTypeSchema = {
     }),
 }
 
+export const ViewColumnTypeEnum = z.enum(["built_in", "property"]);
+export const ViewTypeEnum = z.enum(["table", "gallery", "kanban"])
+export const BuiltInColumnEnum = z.enum(["title", "description", "status", "priority", "assignee", "due_date", "created_at", "updated_at"])
+
+export const ViewColumnSchema = z.object({
+    id: z.uuid().optional(),
+    project_id: z.uuid(),
+    view_type: ViewTypeEnum,
+    column_type: ViewColumnTypeEnum,
+    column_key: z.string(),
+    position: z.number().int().min(0),
+    is_visible: z.boolean().default(true),
+})
+
+export const UpdateViewColumnSchema = ViewColumnSchema.partial();
+
+export const ReorderViewColumnsSchema = z.object({
+    columns: z.array(z.object({
+        id: z.string(),
+        position: z.number().int().min(0)
+    }))
+})
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 export type WorkspaceDb = z.infer<typeof WorkspaceDbSchema>;
@@ -189,4 +209,7 @@ export type TaskLabel = z.infer<typeof TaskLabelSchema>;
 export type TaskAssign = z.infer<typeof TaskAssignSchema>;
 export type PropertyDefinition = z.infer<typeof PropertyDefinition>;
 export type UpdatePropertyDefinition = z.infer<typeof UpdatePropertyDefinition>;
-export type TaskPropertyValue = z.infer<typeof TaskPropertyValue>;
+export type ViewTypeEnum= z.infer<typeof ViewTypeEnum>;
+export type ViewColumnType = z.infer<typeof ViewColumnSchema>;
+export type UpdateViewColumnType = z.infer<typeof UpdateViewColumnSchema>;
+export type ReorderViewColumnType = z.infer<typeof ReorderViewColumnsSchema>;

@@ -1,9 +1,9 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
-import { CustomField, Project, ProjectDb, ReorderProjects, Task, UpdateCustomField, UpdateProject, UpdateTask, UpdateWorkspace, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
+import { CustomField, Project, ProjectDb, PropertyDefinition, ReorderProjects, Task, UpdateCustomField, UpdateProject, UpdatePropertyDefinition, UpdateTask, UpdateWorkspace, ViewColumnType, ViewTypeEnum, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
-import { customFieldTable, projectMemberTable, projectTable, taskLabelTable, taskTable } from "@/db/schema";
+import { customFieldTable, projectMemberTable, projectTable, propertyDefinitionTable, taskLabelTable, taskPropertyValueTable, taskTable, viewColumnTable } from "@/db/schema";
 import { AppError } from "@/utils/app-error";
 
 
@@ -140,7 +140,7 @@ export class WorkspaceRepository {
                 orderBy: [desc(projectTable.position)],
                 limit: 1
             })
-            if(!projects) throw new AppError("Failed to find the position!")
+            if (!projects) throw new AppError("Failed to find the position!")
             const nextPosition = projects[0] ? projects[0].position + 1 : 0;
             const [project] = await tx.insert(projectTable).values({ ...data, position: nextPosition }).returning({
                 id: projectTable.id,
@@ -243,7 +243,7 @@ export class WorkspaceRepository {
     }
 
     async findWorkspaceProjectsByUserId(user_id: string, workspace_id: string) {
-        const result =  await db.query.projectMemberTable.findMany({
+        const result = await db.query.projectMemberTable.findMany({
             where: eq(projectMemberTable.user_id, user_id),
 
             with: {
@@ -275,15 +275,66 @@ export class WorkspaceRepository {
     }
 
     async addTask(data: Task) {
-        const [task] = await db.insert(taskTable).values(data).returning();
+        return await db.transaction(async (tx) => {
+            const { properties, ...taskData } = data;
 
-        return task;
+            const [task] = await db.insert(taskTable).values(taskData).returning();
+
+            if (!task) {
+                throw new AppError("Failed to create task!");
+            }
+
+            if (properties && properties.length > 0) {
+                await tx.insert(taskPropertyValueTable).values(
+                    properties.map(property => ({
+                        task_id: task.id,
+                        property_id: property.property_id,
+                        value: property.value
+                    }))
+                )
+            }
+
+            return task;
+        })
     }
 
     async updateTask(task_id: string, data: UpdateTask) {
-        const [task] = await db.update(taskTable).set(data).where(eq(taskTable.id, task_id)).returning();
+        return await db.transaction(async (tx) => {
+            const { properties, ...taskData } = data;
+            const updateTaskData = cleanData(taskData);
+            const [task] = await db
+                .update(taskTable)
+                .set(updateTaskData)
+                .where(eq(taskTable.id, task_id))
+                .returning();
 
-        return task;
+            if (properties && properties.length > 0) {
+                await Promise.all(
+                    properties.map(
+                        async (property) =>
+                            await tx
+                                .insert(taskPropertyValueTable)
+                                .values({
+                                    task_id,
+                                    property_id: property.property_id,
+                                    value: property.value,
+                                })
+                                .onConflictDoUpdate({
+                                    target: [
+                                        taskPropertyValueTable.task_id,
+                                        taskPropertyValueTable.property_id,
+                                    ],
+                                    set: {
+                                        value: property.value,
+                                        updated_at: new Date(),
+                                    },
+                                }),
+                    ),
+                );
+            }
+
+            return task;
+        });
     }
 
     async deleteTask(task_id: string) {
@@ -308,7 +359,7 @@ export class WorkspaceRepository {
         })
     }
 
-    async addCustomField(data: CustomField & {project_id: string}) {
+    async addCustomField(data: CustomField & { project_id: string }) {
         const [field] = await db.insert(customFieldTable).values(data).returning({
             id: customFieldTable.id,
             project_id: customFieldTable.project_id,
@@ -391,5 +442,54 @@ export class WorkspaceRepository {
         return task
     }
 
-    // async 
+    async addPropertyDefinition(data: PropertyDefinition) {
+        const [property] = await db.insert(propertyDefinitionTable).values(data).returning();
+
+        return property;
+    }
+
+    async updatePropertyDefinition(data: UpdatePropertyDefinition) {
+        const updateData = cleanData(data);
+        const [property] = await db.update(propertyDefinitionTable).set(updateData).returning();
+
+        return property;
+    }
+
+    async findPropertyDefinitionByProjectId(project_id: string) {
+        return await db.query.propertyDefinitionTable.findMany({
+            where: eq(propertyDefinitionTable.project_id, project_id),
+            orderBy: asc(propertyDefinitionTable.position)
+        })
+    }
+
+    async initializeDefaultViewColumns(project_id: string) {
+        const defaultColumns = [
+            { column_type: "builtin" as const, column_key: "title", position: 0 },
+            { column_type: "builtin" as const, column_key: "status", position: 1 },
+            { column_type: "builtin" as const, column_key: "priority", position: 2 },
+            { column_type: "builtin" as const, column_key: "assignee", position: 3 },
+        ]
+
+        await db.insert(viewColumnTable).values(
+            defaultColumns.map(col => ({
+                project_id,
+                view_type: "table" as const,
+                ...col
+            }))
+        )
+    }
+
+    async findViewColumns(project_id: string, view_type: ViewTypeEnum) {
+        return await db.query.viewColumnTable.findMany({
+            where: and(
+                eq(viewColumnTable.project_id, project_id),
+                eq(viewColumnTable.view_type, view_type),
+                eq(viewColumnTable.is_visible, true)
+            )
+        })
+    }
+
+    async addPropertyToView(project_id: string, property_id: string, position: number, view_type: string) {
+        
+    }
 }
