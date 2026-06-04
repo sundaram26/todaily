@@ -1,3 +1,4 @@
+import { viewTypeEnum } from "@/db/schema";
 import z from "zod";
 
 export const WorkspaceSchema = z.object({
@@ -7,7 +8,7 @@ export const WorkspaceSchema = z.object({
 });
 
 export const WorkspaceDbSchema = WorkspaceSchema.extend({
-  created_by: z.uuid(),
+    created_by: z.uuid(),
 });
 
 export const UpdateWorkspaceSchema = WorkspaceSchema.partial();
@@ -26,15 +27,15 @@ export const WorkspaceMemberDbSchema = WorkspaceMemberSchema.extend({
 export const FieldTypeEnum = z.enum(["status", "priority", "label"]);
 
 export const CustomFieldSchema = z.object({
-  project_id: z.uuid().optional(),
-  title: z.string().min(1).max(255, "Maximum length exceeded!"),
-  color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
-  type: FieldTypeEnum,
-  position: z.number().int().min(0).default(0).optional(),
+    project_id: z.uuid().optional(),
+    title: z.string().min(1).max(255, "Maximum length exceeded!"),
+    color: z.string().regex(/^#([0-9A-F]{3}){1,2}$/i),
+    type: FieldTypeEnum,
+    position: z.number().int().min(0).default(0).optional(),
 });
 
 export const UpdateCustomFieldSchema = CustomFieldSchema.partial().extend({
-  id: z.uuid(),
+    id: z.uuid(),
 });
 
 export const ProjectSchema = z.object({
@@ -86,8 +87,8 @@ export const TaskSchema = z.object({
 });
 
 export const TaskDbSchema = TaskSchema.extend({
-  created_by: z.uuid(),
-  updated_by: z.uuid(),
+    created_by: z.uuid(),
+    updated_by: z.uuid(),
 });
 
 export const UpdateTaskSchema = TaskSchema.partial();
@@ -98,7 +99,7 @@ export const TaskAttachmentSchema = z.object({
 });
 
 export const TaskAttachmentDbSchema = TaskAttachmentSchema.extend({
-  uploaded_by: z.uuid(),
+    uploaded_by: z.uuid(),
 });
 
 export const TaskCommentSchema = z.object({
@@ -187,6 +188,22 @@ export const ReorderViewColumnsSchema = z.object({
     }))
 })
 
+export const AddPropertyToViewSchema = z.object({
+    project_id: z.string(),
+    property_id: z.string(),
+    position: z.number(),
+    view_type: ViewTypeEnum
+});
+
+export const ReorderPropertySchema = z.object({
+    project_id: z.string(),
+    view_type: ViewTypeEnum,
+    columns: z.array(z.object({
+        id: z.string(),
+        position: z.number()
+    }))
+})
+
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 export type WorkspaceDb = z.infer<typeof WorkspaceDbSchema>;
 export type WorkspaceMember = z.infer<typeof WorkspaceMemberSchema>;
@@ -209,7 +226,9 @@ export type TaskLabel = z.infer<typeof TaskLabelSchema>;
 export type TaskAssign = z.infer<typeof TaskAssignSchema>;
 export type PropertyDefinition = z.infer<typeof PropertyDefinition>;
 export type UpdatePropertyDefinition = z.infer<typeof UpdatePropertyDefinition>;
-export type ViewTypeEnum= z.infer<typeof ViewTypeEnum>;
+export type ViewTypeEnum = z.infer<typeof ViewTypeEnum>;
 export type ViewColumnType = z.infer<typeof ViewColumnSchema>;
 export type UpdateViewColumnType = z.infer<typeof UpdateViewColumnSchema>;
 export type ReorderViewColumnType = z.infer<typeof ReorderViewColumnsSchema>;
+export type AddPropertyToViewType = z.infer<typeof AddPropertyToViewSchema>;
+export type ReorderPropertyType = z.infer<typeof ReorderPropertySchema>;

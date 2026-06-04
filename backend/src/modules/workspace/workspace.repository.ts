@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
-import { CustomField, Project, ProjectDb, PropertyDefinition, ReorderProjects, Task, UpdateCustomField, UpdateProject, UpdatePropertyDefinition, UpdateTask, UpdateWorkspace, ViewColumnType, ViewTypeEnum, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
-import { and, asc, desc, eq, isNull } from "drizzle-orm";
+import { AddPropertyToViewType, CustomField, Project, ProjectDb, PropertyDefinition, ReorderProjects, ReorderPropertyType, Task, UpdateCustomField, UpdateProject, UpdatePropertyDefinition, UpdateTask, UpdateWorkspace, ViewColumnType, ViewTypeEnum, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
+import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
 import { customFieldTable, projectMemberTable, projectTable, propertyDefinitionTable, taskLabelTable, taskPropertyValueTable, taskTable, viewColumnTable } from "@/db/schema";
 import { AppError } from "@/utils/app-error";
@@ -489,7 +489,39 @@ export class WorkspaceRepository {
         })
     }
 
-    async addPropertyToView(project_id: string, property_id: string, position: number, view_type: string) {
-        
+    async addPropertyToView(data: AddPropertyToViewType) {
+        return await db.transaction(async (tx) => {
+            await tx.update(viewColumnTable)
+                .set({ position: sql`position + 1` })
+                .where(
+                    and(
+                        eq(viewColumnTable.project_id, data.project_id),
+                        eq(viewColumnTable.view_type, data.view_type),
+                        gte(viewColumnTable.position, data.position)
+                    )
+            );
+            
+            const [column] = await tx.insert(viewColumnTable)
+                .values({
+                    project_id: data.project_id,
+                    view_type: data.view_type,
+                    column_type: "property",
+                    column_key: data.property_id,
+                    position: data.position
+                })
+                .returning();
+            
+            return column;
+        })
+    }
+
+    async reorderViewColumns(data: ReorderPropertyType) {
+        return await db.transaction(async (tx) => {
+            for (const column of data.columns) {
+                await tx.update(viewColumnTable)
+                    .set({ position: column.position })
+                    .where(eq(viewColumnTable.id, column.id))
+            }
+        })
     }
 }

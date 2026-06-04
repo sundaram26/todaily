@@ -19,7 +19,7 @@ export const DashboardNav = () => {
     };
 
     return (
-      <div className="h-[8%] w-full border-b-2 border-border flex">
+      <div className="h-[72px] w-full border-b-2 border-border flex">
         <div
           className={cn(
             "h-full p-4 flex items-center border-r-2 border-border cursor-pointer",

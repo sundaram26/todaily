@@ -89,7 +89,7 @@ export const Sidebar = () => {
           </div>
         ))}
       </div>
-      <div className="h-[10%] bg-foreground-muted/10 flex items-center divide-x-1 divide-primary cursor-pointer">
+      <div className="h-[10%] bg-foreground-muted/10 flex items-center divide-x divide-primary cursor-pointer">
         <div
           className="w-[50%] flex justify-center items-center gap-2 p-2 text-md font-semibold hover:h-full active:h-full active:bg-foreground-muted/20 transition-all duration-100"
           onClick={() => logout()}

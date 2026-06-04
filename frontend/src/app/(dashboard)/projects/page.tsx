@@ -6,6 +6,7 @@ import { isSortable } from "@dnd-kit/react/sortable";
 import { useProjectsWithoutWorkspace } from "@/features/project/hooks/use-project";
 import { useReorderProject } from "@/features/project/hooks/use-reorder-project";
 import { useProjectTabStore } from "@/features/project/store/project-tab.store";
+import { ActiveTab } from "@/features/project/components/active-tab";
 
 interface ProjectType {
   id: string;
@@ -29,9 +30,7 @@ function PageContent() {
   
   if (activeTabId) {
     return (
-      <div>
-        activeId : {activeTabId}
-      </div>
+      <ActiveTab />
     )
   }
 
