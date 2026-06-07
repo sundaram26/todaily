@@ -34,18 +34,22 @@ export const ReorderProject = z.object({
   ),
 });
 
-
 export const UpdateCustomField = CustomField.partial().extend({
   id: z.uuid().min(1, "ID is required"),
 });
+
+// task
+export const ViewTypeEnum = z.enum(["table", "kanban", "gallery"])
+
 
 export type CreateProjectType = z.infer<typeof CreateProject>;
 export type UpdateProjectType = z.infer<typeof UpdateProject>;
 export type ReorderProjectType = z.infer<typeof ReorderProject>;
 export type CustomFieldType = z.infer<typeof CustomField>;
 export type UpdateCustomFieldType = z.infer<typeof UpdateCustomField>;
+export type ViewTypeEnumType = z.infer<typeof ViewTypeEnum>;
 
-export type Project = {
+export type ProjectSchemaType = {
   id: string,
   title: string,
   description?: string,

@@ -1,6 +1,6 @@
 import { isAuthenticated } from "@/middlewares/authorize.middleware";
 import { Router } from "express";
-import { createCustomField, createProject, getCustomFieldByProjectId, getProjectById, getProjectWithoutWorkspace, reorderProjects, updateCustomField, updateProject } from "./workspace.controller";
+import { createCustomField, createProject, getCustomFieldByProjectId, getProjectById, getProjectWithoutWorkspace, getTaskLabelsByViewTypes, reorderProjects, updateCustomField, updateProject } from "./workspace.controller";
 import { validateSchema } from "@/middlewares/validate-schema.middleware";
 import { CustomFieldSchema, ProjectSchema, ReorderProjectsSchema, UpdateCustomFieldSchema, UpdateProjectSchema } from "./workspace.schema";
 
@@ -15,5 +15,9 @@ workspaceRoute.put("/projects/reorder", isAuthenticated, validateSchema(ReorderP
 workspaceRoute.post("/custom-field", isAuthenticated, validateSchema(CustomFieldSchema), createCustomField);
 workspaceRoute.put("/custom-field", isAuthenticated, validateSchema(UpdateCustomFieldSchema), updateCustomField);
 workspaceRoute.get("/custom-field/:project_id", isAuthenticated, getCustomFieldByProjectId);
+
+
+workspaceRoute.get("/task/labels", isAuthenticated, getTaskLabelsByViewTypes);
+
 
 export default workspaceRoute;

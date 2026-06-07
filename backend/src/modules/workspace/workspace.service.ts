@@ -1,6 +1,6 @@
 import { AppError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { WorkspaceRepository } from "./workspace.repository";
-import { CustomField, ProjectDb, ReorderProjects, UpdateCustomField, UpdateProject, WorkspaceDb } from "./workspace.schema";
+import { CustomField, ProjectDb, ReorderProjects, UpdateCustomField, UpdateProject, ViewTypeEnumType, WorkspaceDb } from "./workspace.schema";
 
 
 
@@ -119,6 +119,14 @@ export class WorkspaceService {
         return field;
     }
 
-    // async addTask()
+    async findTaskLabelsByViewType(project_id: string, view_type: ViewTypeEnumType="table") {
+        const labels = await this.workspaceRepo.findViewColumns(project_id, view_type)
+
+        if (!labels) {
+            throw new NotFoundError("Columns not found!");
+        }
+
+        return labels;
+    }
 }
 

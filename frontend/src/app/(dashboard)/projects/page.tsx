@@ -7,6 +7,9 @@ import { useProjectsWithoutWorkspace } from "@/features/project/hooks/use-projec
 import { useReorderProject } from "@/features/project/hooks/use-reorder-project";
 import { useProjectTabStore } from "@/features/project/store/project-tab.store";
 import { ActiveTab } from "@/features/project/components/active-tab";
+import { ProjectSchemaType } from "@/features/project/types";
+import { useEffect, useState } from "react";
+import { Grid2x2, Kanban, Table } from "lucide-react";
 
 interface ProjectType {
   id: string;
@@ -25,13 +28,33 @@ function PageContent() {
 
   const projects = projectsData?.data?.map((item: any) => item.project) || [];
   const draggedProject = source && projects.find((p: any) => p.id === source.id);
-
+  const [project, setProject] = useState<ProjectSchemaType | null>(null);
+  
+  useEffect(() => {
+    const projectData = projects.filter((project: ProjectSchemaType) => project.id === activeTabId);
+    setProject(projectData[0] ?? null)
+  }, [activeTabId, projects])
+  
   if (isLoading) return <div>Loading...</div>;
   
   if (activeTabId) {
+    if (project === null) return <div>it's null</div>;
+
     return (
-      <ActiveTab />
-    )
+      <div className="h-[calc(100vh-72px)] w-full">
+        <div className="h-24 w-full px-8 flex justify-between items-center">
+          <div className="w-[80%]">
+            <h3 className="text-2xl font-semibold text-foreground">{project.title}</h3>
+          </div>
+          <div className="flex gap-2 text-foreground">
+            <Table />
+            <Grid2x2 />
+            <Kanban />
+          </div>
+        </div>
+        <ActiveTab activeTabId={activeTabId} />
+      </div>
+    );
   }
 
   return (

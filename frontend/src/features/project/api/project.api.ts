@@ -1,5 +1,5 @@
 import api from "@/lib/axios";
-import { CreateProjectType, CustomFieldType, ReorderProjectType, UpdateCustomFieldType, UpdateProjectType } from "../types";
+import { CreateProjectType, CustomFieldType, ReorderProjectType, UpdateCustomFieldType, UpdateProjectType, ViewTypeEnumType } from "../types";
 
 export const createProject = async (data: CreateProjectType) => {
   const res = await api.post("/workspace/project", data, {
@@ -55,3 +55,21 @@ export const getCustomFieldsByProjectId = async (project_id: string) => {
   const res = await api.get(`/workspace/custom-field/${project_id}`);
   return res.data.data;
 };
+
+// Task Api's
+export const getTaskLabelsByViewTyps = async ({ project_id, view_type }: {
+  project_id: string,
+  view_type: ViewTypeEnumType
+}) => {
+  const res = await api.get("/workspace/task/labels",
+    {
+      params: {
+        project_id,
+        view_type
+      },
+      withCredentials: true
+    },
+  )
+
+  return res.data;
+}

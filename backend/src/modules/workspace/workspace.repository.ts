@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { workspaceMemberTable, workspaceTable } from "@/db/schema/workspace.table";
-import { AddPropertyToViewType, CustomField, Project, ProjectDb, PropertyDefinition, ReorderProjects, ReorderPropertyType, Task, UpdateCustomField, UpdateProject, UpdatePropertyDefinition, UpdateTask, UpdateWorkspace, ViewColumnType, ViewTypeEnum, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
+import { AddPropertyToViewType, CustomField, Project, ProjectDb, PropertyDefinition, ReorderProjects, ReorderPropertyType, Task, UpdateCustomField, UpdateProject, UpdatePropertyDefinition, UpdateTask, UpdateWorkspace, ViewTypeEnumType, WorkspaceDb, WorkspaceMember, WorkspaceMemberDb, WorkspaceMemberRole } from "./workspace.schema";
 import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
 import { cleanData } from "@/utils/clean-data";
 import { customFieldTable, projectMemberTable, projectTable, propertyDefinitionTable, taskLabelTable, taskPropertyValueTable, taskTable, viewColumnTable } from "@/db/schema";
@@ -479,7 +479,7 @@ export class WorkspaceRepository {
         )
     }
 
-    async findViewColumns(project_id: string, view_type: ViewTypeEnum) {
+    async findViewColumns(project_id: string, view_type: ViewTypeEnumType) {
         return await db.query.viewColumnTable.findMany({
             where: and(
                 eq(viewColumnTable.project_id, project_id),

@@ -1,11 +1,17 @@
+import { useTaskLabelByViewType } from "../hooks/use-task-labels";
 
 
 
-export const ActiveTab = () => {
+export const ActiveTab = ({ activeTabId }: {
+  activeTabId: string
+}) => {
+
+  // const { labels } = useTaskLabelByViewType()
+
     return (
-      <div className="scrollbar-track-red-500 scrollbar-thumb-blue-500 w-[500px] h-[500px] bg-red-50 overflow-auto">
-        This is active tab
-        <div className="h-[5000px] w-[50000px] bg-amber-400">dfj;as</div>
+      <div className="scrollbar-track-background scrollbar-thumb-foreground-muted/40 overflow-auto">
+        This is active tab: {activeTabId}
+        {/* <div className="h-[5000px] w-[50000px]">dfj;as</div> */}
       </div>
     );
 }

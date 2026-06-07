@@ -4,6 +4,7 @@ import { WorkspaceService } from "./workspace.service";
 import { WorkspaceRepository } from "./workspace.repository";
 import { ApiResponse } from "@/utils/api-response";
 import { AppError, BadRequestError, UnauthorizedError } from "@/utils/app-error";
+import { ViewTypeEnumType } from "./workspace.schema";
 
 
 const workspaceService = new WorkspaceService(new WorkspaceRepository());
@@ -123,6 +124,28 @@ export const getCustomFieldByProjectId = asyncHandler(async (req: Request, res: 
       status: 200,
       message: "successfully fetched all project fields",
       data: field
+    })
+  )
+})
+
+export const getTaskLabelsByViewTypes = asyncHandler(async (req: Request, res: Response) => {
+  const { project_id, view_type } = req.params;
+
+  if (!project_id || (typeof project_id !== "string") || !view_type || (!["table", "gallery", "kanban"].includes(view_type as ViewTypeEnumType))) {
+    throw new BadRequestError("Invalid request!")
+  }
+
+  const labels = await workspaceService.findTaskLabelsByViewType(project_id, view_type as ViewTypeEnumType);
+
+  if (!labels) {
+    throw new AppError("unable to fetch the task labels!")
+  }
+
+  return res.json(
+    new ApiResponse({
+      status: 200,
+      message: "successfully fetched the task labels",
+      data: labels
     })
   )
 })
