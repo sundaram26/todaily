@@ -1,6 +1,7 @@
 import { AppError, NotFoundError, UnauthorizedError } from "@/utils/app-error";
 import { WorkspaceRepository } from "./workspace.repository";
 import { CustomField, ProjectDb, ReorderProjects, UpdateCustomField, UpdateProject, ViewTypeEnumType, WorkspaceDb } from "./workspace.schema";
+import { View } from "drizzle-orm";
 
 
 
@@ -19,6 +20,8 @@ export class WorkspaceService {
         if (!project) {
             throw new AppError("Unable to create the project!");
         }
+
+        await this.workspaceRepo.initializeDefaultViewColumns(project.id);
 
         if (
           customFields &&
@@ -127,6 +130,14 @@ export class WorkspaceService {
         }
 
         return labels;
+    }
+
+    async getViewColumnByViewType(project_id: string, view_type: ViewTypeEnumType = "table") {
+        const viewColumns = await this.workspaceRepo.findViewColumns(project_id, view_type);
+
+        const builtinColumns = viewColumns.filter((c) => c.column_type === "builtin")
+        const propertyColumnIds = viewColumns
+            .filter((c) => c.column_type === "property" && c.column_key)
     }
 }
 

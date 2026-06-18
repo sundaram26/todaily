@@ -524,4 +524,8 @@ export class WorkspaceRepository {
             }
         })
     }
+
+    async findPropertyDefinitionByIds(ids: string[]) {
+        
+    }
 }

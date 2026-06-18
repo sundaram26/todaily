@@ -149,3 +149,12 @@ export const getTaskLabelsByViewTypes = asyncHandler(async (req: Request, res: R
     })
   )
 })
+
+// export const getViewColumnsByViewType = asyncHandler(async (req: Request, res: Response) => {
+//   const { project_id, view_type } = req.query as {
+//     project_id: string,
+//     view_type: ViewTypeEnumType
+//   }
+
+//   const columns = await workspaceService.get
+// })
