@@ -1,20 +1,25 @@
 {
-  "name": "backend",
+  "name": "@todaily/api",
   "version": "1.0.0",
   "description": "",
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "start": "node dist/app.js",
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
-    "seed": "tsx src/db/seeders/seed.ts"
+    "start": "node dist/app.js",
+    "seed": "tsx src/db/seeders/seed.ts",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint .",
+    "clean": "rimraf dist"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.16.1",
   "devDependencies": {
+    "@todaily/eslint-config": "workspace:*",
+    "@todaily/typescript-config": "workspace:*",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -24,6 +29,7 @@
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.18.0",
     "drizzle-kit": "^0.31.10",
+    "eslint": "^9",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
