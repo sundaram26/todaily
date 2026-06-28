@@ -1,0 +1,2 @@
+ALTER TABLE "projects" ADD COLUMN "label_id" uuid;--> statement-breakpoint
+ALTER TABLE "projects" ADD CONSTRAINT "projects_label_id_custom_fields_id_fk" FOREIGN KEY ("label_id") REFERENCES "public"."custom_fields"("id") ON DELETE set null ON UPDATE no action;
